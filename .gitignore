@@ -1,0 +1,28 @@
+# Build output
+[Bb]in/
+[Oo]bj/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# NuGet (restored from packages.config)
+packages/
+
+# Publish output
+*.pubxml.user
+PublishProfiles/*.pubxml.user
+*.zip
+
+# Local secrets - never commit. See the *.example files next to them.
+KPSCObjections/connectionStrings.config
+KPSCObjections/appSettings.secrets.config
+
+# Uploaded data
+KPSCObjections/UploadedKeyAnswers/
+
+# Claude Code local settings
+.claude/settings.local.json

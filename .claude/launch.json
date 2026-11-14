@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "kpsc-objections",
+      "runtimeExecutable": "C:\\Program Files\\IIS Express\\iisexpress.exe",
+      "runtimeArgs": ["/path:C:\\Users\\KPSC\\source\\repos\\KPSCObjections\\KPSCObjections", "/port:8099"],
+      "port": 8099
+    }
+  ]
+}
