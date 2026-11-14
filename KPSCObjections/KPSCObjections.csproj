@@ -248,6 +248,7 @@
     <Content Include="Error.aspx" />
     <Content Include="PaymentPush.ashx" />
     <Content Include="ObjectionDocument.ashx" />
+    <Content Include="UploadCandidates.aspx" />
     <Content Include="UploadKeyAnswer.aspx" />
     <Content Include="Web.config" />
     <Content Include="Bundle.config" />
@@ -346,6 +347,13 @@
     </Compile>
     <Compile Include="Site.Master.designer.cs">
       <DependentUpon>Site.Master</DependentUpon>
+    </Compile>
+    <Compile Include="UploadCandidates.aspx.cs">
+      <DependentUpon>UploadCandidates.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="UploadCandidates.aspx.designer.cs">
+      <DependentUpon>UploadCandidates.aspx</DependentUpon>
     </Compile>
     <Compile Include="UploadKeyAnswer.aspx.cs">
       <DependentUpon>UploadKeyAnswer.aspx</DependentUpon>

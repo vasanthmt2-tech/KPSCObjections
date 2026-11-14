@@ -82,6 +82,10 @@
                 &#8962;
             </a>
 
+            <a href="~/UploadCandidates.aspx" runat="server">
+                UPLOAD CANDIDATES
+            </a>
+
             <a href="~/UploadKeyAnswer.aspx" runat="server">
                 UPLOAD KEY ANSWERS
             </a>
