@@ -5,7 +5,7 @@ using KPSCObjections.Security;
 
 namespace KPSCObjections
 {
-    public partial class Admin : System.Web.UI.MasterPage
+    public partial class Admin : SecureMasterPage
     {
         protected void Page_Load(object sender, EventArgs e)
         {

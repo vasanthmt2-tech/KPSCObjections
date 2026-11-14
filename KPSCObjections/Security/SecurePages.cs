@@ -18,7 +18,19 @@ namespace KPSCObjections.Security
                 Response.Redirect("~/Login.aspx", true);
             }
 
+            NoStore(Response);
+
             base.OnInit(e);
+        }
+
+        /// <summary>
+        /// Signed-in pages are not kept by the browser, so Back after logout
+        /// on a shared computer does not show another person's details.
+        /// </summary>
+        internal static void NoStore(System.Web.HttpResponse response)
+        {
+            response.Cache.SetCacheability(System.Web.HttpCacheability.NoCache);
+            response.Cache.SetNoStore();
         }
     }
 
@@ -31,6 +43,8 @@ namespace KPSCObjections.Security
             {
                 Response.Redirect("~/AdminLogin.aspx", true);
             }
+
+            CandidatePage.NoStore(Response);
 
             base.OnInit(e);
         }

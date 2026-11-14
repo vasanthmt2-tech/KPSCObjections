@@ -55,7 +55,6 @@ namespace KPSCObjections
             context.Response.ContentType = "application/pdf";
             context.Response.AddHeader("Content-Disposition",
                 "inline; filename=\"Objection_" + paper + "_" + questionNo + ".pdf\"");
-            context.Response.AddHeader("X-Content-Type-Options", "nosniff");
             context.Response.Cache.SetCacheability(HttpCacheability.NoCache);
             context.Response.BinaryWrite(data);
         }

@@ -26,3 +26,6 @@ KPSCObjections/UploadedKeyAnswers/
 
 # Claude Code local settings
 .claude/settings.local.json
+
+# Application logs
+KPSCObjections/App_Data/logs/

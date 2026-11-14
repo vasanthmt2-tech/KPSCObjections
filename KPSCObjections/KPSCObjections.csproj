@@ -54,10 +54,6 @@
     <Reference Include="ExcelNumberFormat, Version=1.1.0.0, Culture=neutral, PublicKeyToken=23c6f5d73be07eca, processorArchitecture=MSIL">
       <HintPath>..\packages\ExcelNumberFormat.1.1.0\lib\net20\ExcelNumberFormat.dll</HintPath>
     </Reference>
-    <Reference Include="Idunno.AntiCSRF, Version=0.9.1.0, Culture=neutral, PublicKeyToken=f1d7be912d95bdb9, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\Vasanth\2025\EASE-27Jan2017_BeforeSecurityAuditFixes - Copy (2)\EASE\bin\Idunno.AntiCSRF.dll</HintPath>
-    </Reference>
     <Reference Include="Irony, Version=1.0.11.0, Culture=neutral, PublicKeyToken=ca48ace7223ead47, processorArchitecture=MSIL">
       <HintPath>..\packages\Irony.NetCore.1.0.11\lib\net461\Irony.dll</HintPath>
     </Reference>
@@ -186,11 +182,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="About.aspx" />
     <Content Include="AdminLogin.aspx" />
     <Content Include="AdminObjection.aspx" />
     <Content Include="Captcha.aspx" />
-    <Content Include="Contact.aspx" />
     <Content Include="Content\bootstrap-theme.css" />
     <Content Include="Content\bootstrap-theme.min.css" />
     <Content Include="Content\bootstrap.css" />
@@ -251,13 +245,12 @@
     <Content Include="Scripts\WebForms\WebUIValidation.js" />
     <Content Include="Site.Master" />
     <Content Include="Pay.aspx" />
+    <Content Include="Error.aspx" />
     <Content Include="PaymentPush.ashx" />
     <Content Include="ObjectionDocument.ashx" />
     <Content Include="UploadKeyAnswer.aspx" />
-    <Content Include="ViewSwitcher.ascx" />
     <Content Include="Web.config" />
     <Content Include="Bundle.config" />
-    <Content Include="Site.Mobile.Master" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Admin.Master.cs">
@@ -283,13 +276,6 @@
     </Compile>
     <Compile Include="AES256.cs" />
     <Compile Include="App_Start\BundleConfig.cs" />
-    <Compile Include="About.aspx.cs">
-      <DependentUpon>About.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="About.aspx.designer.cs">
-      <DependentUpon>About.aspx</DependentUpon>
-    </Compile>
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="Captcha.aspx.cs">
       <DependentUpon>Captcha.aspx</DependentUpon>
@@ -297,13 +283,6 @@
     </Compile>
     <Compile Include="Captcha.aspx.designer.cs">
       <DependentUpon>Captcha.aspx</DependentUpon>
-    </Compile>
-    <Compile Include="Contact.aspx.cs">
-      <DependentUpon>Contact.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="Contact.aspx.designer.cs">
-      <DependentUpon>Contact.aspx</DependentUpon>
     </Compile>
     <Compile Include="DLL\SqlHelper.cs" />
     <Compile Include="Global.asax.cs">
@@ -355,8 +334,12 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Security\AdminAuth.cs" />
     <Compile Include="Security\AuthSession.cs" />
+    <Compile Include="Security\AppLog.cs" />
+    <Compile Include="Security\SecureMasterPage.cs" />
     <Compile Include="Security\PasswordHasher.cs" />
-    <Compile Include="Security\SecurePages.cs" />
+    <Compile Include="Security\SecurePages.cs">
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
     <Compile Include="Site.Master.cs">
       <DependentUpon>Site.Master</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -364,26 +347,12 @@
     <Compile Include="Site.Master.designer.cs">
       <DependentUpon>Site.Master</DependentUpon>
     </Compile>
-    <Compile Include="Site.Mobile.Master.cs">
-      <DependentUpon>Site.Mobile.Master</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="Site.Mobile.Master.designer.cs">
-      <DependentUpon>Site.Mobile.Master</DependentUpon>
-    </Compile>
     <Compile Include="UploadKeyAnswer.aspx.cs">
       <DependentUpon>UploadKeyAnswer.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="UploadKeyAnswer.aspx.designer.cs">
       <DependentUpon>UploadKeyAnswer.aspx</DependentUpon>
-    </Compile>
-    <Compile Include="ViewSwitcher.ascx.cs">
-      <DependentUpon>ViewSwitcher.ascx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="ViewSwitcher.ascx.designer.cs">
-      <DependentUpon>ViewSwitcher.ascx</DependentUpon>
     </Compile>
   </ItemGroup>
   <ItemGroup />

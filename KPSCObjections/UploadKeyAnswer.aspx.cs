@@ -707,6 +707,9 @@ namespace KPSCObjections
             Response.TransmitFile(fullPath);
             Response.Flush();
 
+            // Stop the page's own HTML being appended to the downloaded file.
+            Response.SuppressContent = true;
+
             Context.ApplicationInstance.CompleteRequest();
         }
 

@@ -1,248 +1,224 @@
 ﻿using System;
+using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
-using System.Data.OleDb;
-using System.Configuration;
-using System.EnterpriseServices;
-using System.Collections.Generic;
 
 namespace KPSCObjections.DLL
 {
+    /// <summary>
+    /// Database access for the portal.
+    ///
+    /// Every method opens its own connection and closes it when done. Errors
+    /// are not swallowed: they reach the caller, and unhandled ones are logged
+    /// by Global.asax and shown as the error page.
+    ///
+    /// Prefer the overloads that take SqlParameter objects. The overloads that
+    /// take parameter names and values as strings are kept for existing
+    /// callers; a value containing ",@" cannot be passed through them.
+    /// </summary>
     public class SqlHelper
     {
+        private const int CommandTimeoutSeconds = 60;
+
+        private static readonly string[] TextCommandKeywords =
+        {
+            "select", "insert", "update", "delete", "with", "set", "declare", "begin", "merge", "if"
+        };
+
+        private readonly string strConnectionString;
+
         public SqlHelper()
         {
             strConnectionString = ConfigurationManager.ConnectionStrings["Objection_ConnectionString"].ConnectionString;
         }
-        private string strConnectionString = "";
 
+        // ---------------------------------------------------------------
+        // DataTable
+        // ---------------------------------------------------------------
 
+        /// <summary>
+        /// Runs a query or, when the text is not a SQL statement, a stored
+        /// procedure of that name, and returns the first result set.
+        /// </summary>
         public DataTable ExecuteDataTable(string query, params SqlParameter[] parameters)
         {
-            SqlConnection cnn = new SqlConnection(strConnectionString);
-            SqlCommand cmd = new SqlCommand(query, cnn);
-            SqlDataAdapter da = new SqlDataAdapter();
             DataTable dt = new DataTable();
-            if (query.ToLower().Trim().StartsWith("select"))
+
+            using (SqlConnection cnn = new SqlConnection(strConnectionString))
+            using (SqlCommand cmd = CreateCommand(cnn, query, CommandTypeFor(query), parameters))
+            using (SqlDataAdapter da = new SqlDataAdapter(cmd))
             {
-                cmd.CommandType = CommandType.Text;
+                try
+                {
+                    da.Fill(dt);
+                }
+                finally
+                {
+                    // Lets the caller reuse its SqlParameter objects.
+                    cmd.Parameters.Clear();
+                }
             }
-            else
-            {
-                cmd.CommandType = CommandType.StoredProcedure;
-            }
-            for (int i = 0; i <= parameters.Length - 1; i++)
-            {
-                cmd.Parameters.Add(parameters[i]);
-            }
-            try
-            {
-                cmd.CommandTimeout = 0;
-                da.SelectCommand = cmd;
-                da.Fill(dt);
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-            finally
-            {
-                da.Dispose();
-            }
+
             return dt;
         }
+
+        /// <summary>
+        /// String-parameter form: names "@A,@B", values "@1,@2" (each value
+        /// prefixed with '@').
+        /// </summary>
         public DataTable ExecuteDataTable(string Query, string ParamNames, string ParamValues)
         {
-            // Line breaks become spaces, so a multi-line query does not have
-            // its lines glued together ("...o.RegNoFROM dbo...").
-            Query = Query.Replace("\r", " ");
-            Query = Query.Replace("\n", " ");
-            Query = Query.Replace("\t", " ");
-            DataTable dt = new DataTable();
-            ParamValues = "," + ParamValues;
-            SqlConnection cnn = new SqlConnection(strConnectionString);
-            SqlCommand cmd = new SqlCommand(Query, cnn);
-            SqlDataAdapter da = new SqlDataAdapter();
-            string[] aStrtoSplit = new string[] { ",@" };
-            string[] aParamNames = ParamNames.Replace(" ", "").Split(',');
-            string[] aParamValues = ParamValues.Split(aStrtoSplit, StringSplitOptions.RemoveEmptyEntries);
-            if (aParamNames.Length != aParamValues.Length)
-            {
-                return (null);
-            }
-            if (Query.ToLower().Trim().StartsWith("select"))
-            {
-                cmd.CommandType = CommandType.Text;
-            }
-            else if (Query.ToLower().Trim().StartsWith("insert"))
-            {
-                cmd.CommandType = CommandType.Text;
-            }
-            else if (Query.ToLower().Trim().StartsWith("update"))
-            {
-                cmd.CommandType = CommandType.Text;
-            }
-            else if (Query.ToLower().Trim().StartsWith("delete"))
-            {
-                cmd.CommandType = CommandType.Text;
-            }
-            else
-            {
-                cmd.CommandType = CommandType.StoredProcedure;
-            }
-            if (aParamNames[0] != "")
-            {
-                for (int i = 0; i < aParamNames.Length; i++)
-                {
-                    if (aParamNames[i].Trim().Substring(0, 1) == "@")
-                    {
-                        cmd.Parameters.Add(new SqlParameter(aParamNames[i], aParamValues[i]));
-                    }
-                }
-            }
-            try
-            {
-                cmd.CommandTimeout = 0;
-                da.SelectCommand = cmd;
-                da.Fill(dt);
-            }
-            catch (Exception ex)
-            {
-                // Utilities.Report_Error(ex);
-            }
-            finally
-            {
-                da.Dispose();
-            }
-            return (dt);
+            Query = Flatten(Query);
+
+            return ExecuteDataTable(Query, ParseParameters(ParamNames, ParamValues));
         }
 
-        public SqlDataReader ExecuteDataReader(string query, string ParamNames, string ParamValues)
-        {
-            query = query.Replace("\r", " ");
-            query = query.Replace("\n", " ");
-            query = query.Replace("\t", " ");
-            query = query.TrimStart();
-            ParamValues = "," + ParamValues;
-            SqlConnection cnn = new SqlConnection(strConnectionString);
-            SqlCommand cmd = new SqlCommand(query, cnn);
-            SqlDataReader dr;
-            string[] aStrtoSplit = new string[] { ",@" };
-            string[] aParamNames = ParamNames.Replace(" ", "").Split(',');
-            string[] aParamValues = ParamValues.Split(aStrtoSplit, StringSplitOptions.RemoveEmptyEntries);
-            if (aParamNames.Length != aParamValues.Length)
-            {
-                return (null);
-            }
-            if (query.StartsWith("SELECT") | query.StartsWith("select") | query.StartsWith("Select") | query.StartsWith(" SELECT") | query.StartsWith(" select") | query.StartsWith(" Select"))
-            {
-                cmd.CommandType = CommandType.Text;
-            }
-            else
-            {
-                cmd.CommandType = CommandType.StoredProcedure;
-            }
-            if (aParamNames[0] != "")
-            {
-                for (int i = 0; i < aParamNames.Length; i++)
-                {
-                    if (aParamNames[i].Trim().Substring(0, 1) == "@")
-                    {
-                        cmd.Parameters.Add(new SqlParameter(aParamNames[i], aParamValues[i]));
-                    }
-                }
-            }
-            //for (int i = 0; i <= parameters.Length - 1; i++)
-            //{
-            //    cmd.Parameters.Add(parameters[i]);
-            //}
-            try
-            {
-                cnn.Open();
-                cmd.CommandTimeout = 0;
-                dr = cmd.ExecuteReader(CommandBehavior.CloseConnection);
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-            finally
-            {
-                if (cnn.State == ConnectionState.Open)
-                {
-                    //    cnn.Close();
-                }
-            }
-            return dr;
-        }
+        // ---------------------------------------------------------------
+        // DataReader
+        // ---------------------------------------------------------------
 
+        /// <summary>
+        /// Returns an open reader. Dispose it (a using block) to close the
+        /// connection.
+        /// </summary>
         public SqlDataReader ExecuteDataReader(string query, params SqlParameter[] parameters)
         {
             SqlConnection cnn = new SqlConnection(strConnectionString);
-            SqlCommand cmd = new SqlCommand(query, cnn);
-            SqlDataReader dr;
-            if (query.StartsWith("SELECT") | query.StartsWith("select") | query.StartsWith("Select") | query.StartsWith(" SELECT") | query.StartsWith(" select") | query.StartsWith(" Select"))
-            {
-                cmd.CommandType = CommandType.Text;
-            }
-            else
-            {
-                cmd.CommandType = CommandType.StoredProcedure;
-            }
-            for (int i = 0; i <= parameters.Length - 1; i++)
-            {
-                cmd.Parameters.Add(parameters[i]);
-            }
+
             try
             {
+                SqlCommand cmd = CreateCommand(cnn, query, CommandTypeFor(query), parameters);
+
                 cnn.Open();
-                cmd.CommandTimeout = 0;
-                dr = cmd.ExecuteReader(CommandBehavior.CloseConnection);
+
+                return cmd.ExecuteReader(CommandBehavior.CloseConnection);
             }
-            catch (Exception ex)
+            catch
             {
-                throw ex;
+                cnn.Dispose();
+                throw;
             }
-            finally
-            {
-                if (cnn.State == ConnectionState.Open)
-                {
-                    //    cnn.Close();
-                }
-            }
-            return dr;
         }
+
+        /// <summary>String-parameter form; see ExecuteDataTable.</summary>
+        public SqlDataReader ExecuteDataReader(string query, string ParamNames, string ParamValues)
+        {
+            query = Flatten(query);
+
+            return ExecuteDataReader(query, ParseParameters(ParamNames, ParamValues));
+        }
+
+        // ---------------------------------------------------------------
+        // Non-query and scalar (always SQL text)
+        // ---------------------------------------------------------------
 
         public int ExecuteNonQuery(string query, params SqlParameter[] parameters)
         {
             using (SqlConnection cnn = new SqlConnection(strConnectionString))
-            using (SqlCommand cmd = new SqlCommand(query, cnn))
+            using (SqlCommand cmd = CreateCommand(cnn, query, CommandType.Text, parameters))
             {
-                cmd.CommandType = CommandType.Text;
-                cmd.CommandTimeout = 60;
-
-                if (parameters != null)
-                    cmd.Parameters.AddRange(parameters);
-
-                cnn.Open();
-                return cmd.ExecuteNonQuery();
+                try
+                {
+                    cnn.Open();
+                    return cmd.ExecuteNonQuery();
+                }
+                finally
+                {
+                    cmd.Parameters.Clear();
+                }
             }
         }
 
         public object ExecuteScalar(string query, params SqlParameter[] parameters)
         {
             using (SqlConnection cnn = new SqlConnection(strConnectionString))
-            using (SqlCommand cmd = new SqlCommand(query, cnn))
+            using (SqlCommand cmd = CreateCommand(cnn, query, CommandType.Text, parameters))
             {
-                cmd.CommandType = CommandType.Text;
-                cmd.CommandTimeout = 60;
-
-                if (parameters != null)
-                    cmd.Parameters.AddRange(parameters);
-
-                cnn.Open();
-                return cmd.ExecuteScalar();
+                try
+                {
+                    cnn.Open();
+                    return cmd.ExecuteScalar();
+                }
+                finally
+                {
+                    cmd.Parameters.Clear();
+                }
             }
         }
-    }    
+
+        // ---------------------------------------------------------------
+        // Helpers
+        // ---------------------------------------------------------------
+
+        private static SqlCommand CreateCommand(
+            SqlConnection cnn, string query, CommandType type, SqlParameter[] parameters)
+        {
+            SqlCommand cmd = new SqlCommand(query, cnn);
+
+            cmd.CommandType = type;
+            cmd.CommandTimeout = CommandTimeoutSeconds;
+
+            if (parameters != null)
+                cmd.Parameters.AddRange(parameters);
+
+            return cmd;
+        }
+
+        /// <summary>
+        /// Text when the first word is a SQL keyword; otherwise the text is
+        /// taken to be a stored procedure name.
+        /// </summary>
+        private static CommandType CommandTypeFor(string query)
+        {
+            string text = (query ?? "").TrimStart();
+            int end = 0;
+
+            while (end < text.Length && char.IsLetter(text[end]))
+                end++;
+
+            string firstWord = text.Substring(0, end);
+
+            // "dbo.Proc" and "Proc" stop at '.' or the end, so a keyword
+            // only counts when something other than a name follows it.
+            bool followedByName = end < text.Length && (text[end] == '.' || text[end] == '_');
+
+            if (!followedByName &&
+                Array.Exists(TextCommandKeywords, k => k.Equals(firstWord, StringComparison.OrdinalIgnoreCase)))
+            {
+                return CommandType.Text;
+            }
+
+            return CommandType.StoredProcedure;
+        }
+
+        /// <summary>Line breaks and tabs become spaces, so lines are not glued together.</summary>
+        private static string Flatten(string query)
+        {
+            return (query ?? "").Replace("\r", " ").Replace("\n", " ").Replace("\t", " ").Trim();
+        }
+
+        private static SqlParameter[] ParseParameters(string paramNames, string paramValues)
+        {
+            string[] names = (paramNames ?? "").Replace(" ", "")
+                .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+
+            string[] values = ("," + (paramValues ?? ""))
+                .Split(new[] { ",@" }, StringSplitOptions.None);
+
+            // values[0] is the empty text before the first ",@".
+            if (values.Length - 1 != names.Length)
+            {
+                throw new ArgumentException(
+                    "Expected " + names.Length + " parameter value(s) but found " + (values.Length - 1) +
+                    ". A value containing \",@\" cannot be passed in this form; use SqlParameter objects.");
+            }
+
+            SqlParameter[] parameters = new SqlParameter[names.Length];
+
+            for (int i = 0; i < names.Length; i++)
+                parameters[i] = new SqlParameter(names[i], values[i + 1]);
+
+            return parameters;
+        }
+    }
 }

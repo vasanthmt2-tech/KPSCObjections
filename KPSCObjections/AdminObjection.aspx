@@ -105,7 +105,7 @@
                                    Visible="false" HeaderText="Subjectcode" />
 
                                 <asp:BoundField DataField="QuestionNo"
-                                    HeaderText="Question Number" />
+                                    HeaderText="Master Question Number" />
 
                                 <asp:BoundField DataField="NoOfObjections"
                                     HeaderText="No. Of Objections" />

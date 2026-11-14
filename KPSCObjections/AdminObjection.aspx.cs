@@ -40,30 +40,15 @@ namespace KPSCObjections
 
         private void BindObjectionSummary()
         {
+            // One row per MASTER question. An objection stores the question
+            // number as printed in the candidate's own version, so it is mapped
+            // back through that version's Set column (SetA..SetL) to the master
+            // question. The Excel and ZIP downloads below take this master
+            // question number and apply the same mapping.
             DataTable dt = sh.ExecuteDataTable(@"SELECT
     o.PaperCode AS SubjectCode,
     s.SubjectDescription AS SubjectDesc,
-
-    CASE UPPER(LTRIM(RTRIM(
-        CASE
-            WHEN o.PaperCode = 'P1' THEN c.P1VersionCode
-            WHEN o.PaperCode = 'P2' THEN c.P2VersionCode
-        END
-    )))
-        WHEN 'A' THEN ka.SetA
-        WHEN 'B' THEN ka.SetB
-        WHEN 'C' THEN ka.SetC
-        WHEN 'D' THEN ka.SetD
-        WHEN 'E' THEN ka.SetE
-        WHEN 'F' THEN ka.SetF
-        WHEN 'G' THEN ka.SetG
-        WHEN 'H' THEN ka.SetH
-        WHEN 'I' THEN ka.SetI
-        WHEN 'J' THEN ka.SetJ
-        WHEN 'K' THEN ka.SetK
-        WHEN 'L' THEN ka.SetL
-    END AS QuestionNo,
-
+    ka.QuestionNo AS QuestionNo,
     COUNT(*) AS NoOfObjections
 
 FROM dbo.Objections o
@@ -78,37 +63,33 @@ INNER JOIN dbo.Candidate c
 LEFT JOIN dbo.Subject s
     ON o.PaperCode = s.PaperCode
 
-LEFT JOIN dbo.KeyAnswers ka
+INNER JOIN dbo.KeyAnswers ka
     ON ka.ExamCode = c.ExamCode
     AND ka.SubjectCode = o.PaperCode
-    AND ka.QuestionNo = o.QuestionNo
+    AND o.QuestionNo =
+        CASE UPPER(LTRIM(RTRIM(o.VersionCode)))
+            WHEN 'A' THEN TRY_CONVERT(INT, ka.SetA)
+            WHEN 'B' THEN TRY_CONVERT(INT, ka.SetB)
+            WHEN 'C' THEN TRY_CONVERT(INT, ka.SetC)
+            WHEN 'D' THEN TRY_CONVERT(INT, ka.SetD)
+            WHEN 'E' THEN TRY_CONVERT(INT, ka.SetE)
+            WHEN 'F' THEN TRY_CONVERT(INT, ka.SetF)
+            WHEN 'G' THEN TRY_CONVERT(INT, ka.SetG)
+            WHEN 'H' THEN TRY_CONVERT(INT, ka.SetH)
+            WHEN 'I' THEN TRY_CONVERT(INT, ka.SetI)
+            WHEN 'J' THEN TRY_CONVERT(INT, ka.SetJ)
+            WHEN 'K' THEN TRY_CONVERT(INT, ka.SetK)
+            WHEN 'L' THEN TRY_CONVERT(INT, ka.SetL)
+        END
 
 GROUP BY
     o.PaperCode,
     s.SubjectDescription,
-    CASE UPPER(LTRIM(RTRIM(
-        CASE
-            WHEN o.PaperCode = 'P1' THEN c.P1VersionCode
-            WHEN o.PaperCode = 'P2' THEN c.P2VersionCode
-        END
-    )))
-        WHEN 'A' THEN ka.SetA
-        WHEN 'B' THEN ka.SetB
-        WHEN 'C' THEN ka.SetC
-        WHEN 'D' THEN ka.SetD
-        WHEN 'E' THEN ka.SetE
-        WHEN 'F' THEN ka.SetF
-        WHEN 'G' THEN ka.SetG
-        WHEN 'H' THEN ka.SetH
-        WHEN 'I' THEN ka.SetI
-        WHEN 'J' THEN ka.SetJ
-        WHEN 'K' THEN ka.SetK
-        WHEN 'L' THEN ka.SetL
-    END
+    ka.QuestionNo
 
 ORDER BY
     o.PaperCode,
-    QuestionNo;");
+    ka.QuestionNo;");
 
             gvObjectionSummary.DataSource = dt;
             gvObjectionSummary.DataBind();
@@ -181,6 +162,10 @@ ORDER BY o.VersionCode;", "@PaperCode,@MasterQuestionNo", "@" + subjectCode + ",
                                     fileName += ".pdf";
                                 }
 
+                                // Two candidates can upload files with the same name;
+                                // the registration number keeps every entry distinct.
+                                fileName = dr["RegNo"] + "_" + fileName;
+
                                 ZipArchiveEntry entry = zip.CreateEntry(fileName);
 
                                 using (Stream entryStream = entry.Open())
@@ -202,6 +187,9 @@ ORDER BY o.VersionCode;", "@PaperCode,@MasterQuestionNo", "@" + subjectCode + ",
 
                 Response.BinaryWrite(ms.ToArray());
                 Response.Flush();
+
+                // Stop the page's own HTML being appended to the downloaded file.
+                Response.SuppressContent = true;
 
                 HttpContext.Current.ApplicationInstance.CompleteRequest();
             }
@@ -355,54 +343,51 @@ ORDER BY s.SubjectCode, ka.QuestionNo, o.VersionCode;";
             if (dt.Rows.Count == 0)
                 return;
 
-            StringBuilder html = new StringBuilder();
-
-            html.Append("<table border='1'>");
-            html.Append("<tr>");
-
-            foreach (DataColumn col in dt.Columns)
+            // A real .xlsx workbook. Cell values are written as text, so a remark
+            // that starts with "=" is shown as typed and never runs as a formula.
+            using (ClosedXML.Excel.XLWorkbook workbook = new ClosedXML.Excel.XLWorkbook())
+            using (MemoryStream ms = new MemoryStream())
             {
-                html.Append("<th>");
-                html.Append(HttpUtility.HtmlEncode(col.ColumnName));
-                html.Append("</th>");
-            }
+                ClosedXML.Excel.IXLWorksheet sheet = workbook.Worksheets.Add("Objections");
 
-            html.Append("</tr>");
-
-            foreach (DataRow dr in dt.Rows)
-            {
-                html.Append("<tr>");
-
-                foreach (DataColumn col in dt.Columns)
+                for (int c = 0; c < dt.Columns.Count; c++)
                 {
-                    html.Append("<td>");
-                    html.Append(HttpUtility.HtmlEncode(
-                        Convert.ToString(dr[col])));
-                    html.Append("</td>");
+                    sheet.Cell(1, c + 1).SetValue(dt.Columns[c].ColumnName);
+                    sheet.Cell(1, c + 1).Style.Font.Bold = true;
                 }
 
-                html.Append("</tr>");
+                for (int r = 0; r < dt.Rows.Count; r++)
+                {
+                    for (int c = 0; c < dt.Columns.Count; c++)
+                    {
+                        sheet.Cell(r + 2, c + 1).SetValue(Convert.ToString(dt.Rows[r][c]));
+                    }
+                }
+
+                sheet.SheetView.FreezeRows(1);
+                sheet.Columns().Width = 18;
+                sheet.Column(dt.Columns.Count).Width = 60;   // Remarks
+
+                workbook.SaveAs(ms);
+
+                Response.Clear();
+                Response.Buffer = true;
+                Response.ContentType =
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+
+                Response.AddHeader(
+                    "Content-Disposition",
+                    "attachment;filename=ObjectionDetails_" +
+                    subjectCode + "_" + questionNo + ".xlsx"
+                );
+
+                Response.BinaryWrite(ms.ToArray());
             }
 
-            html.Append("</table>");
-
-            Response.Clear();
-            Response.Buffer = true;
-            Response.ContentType = "application/vnd.ms-excel";
-
-            Response.AddHeader(
-                "Content-Disposition",
-                "attachment;filename=ObjectionDetails_" +
-                subjectCode + "_" + questionNo + ".xls"
-            );
-
-            Response.ContentEncoding = Encoding.UTF8;
-
-            Response.Write("<html><head><meta charset='utf-8'></head><body>");
-            Response.Write(html.ToString());
-            Response.Write("</body></html>");
-
             Response.Flush();
+
+            // Stop the page's own HTML being appended to the downloaded file.
+            Response.SuppressContent = true;
             HttpContext.Current.ApplicationInstance.CompleteRequest();
         }
     }

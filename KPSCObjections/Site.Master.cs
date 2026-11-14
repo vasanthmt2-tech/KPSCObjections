@@ -7,7 +7,7 @@ using System.Web.UI.WebControls;
 
 namespace KPSCObjections
 {
-    public partial class SiteMaster : MasterPage
+    public partial class SiteMaster : KPSCObjections.Security.SecureMasterPage
     {
         protected void Page_Load(object sender, EventArgs e)
         {
