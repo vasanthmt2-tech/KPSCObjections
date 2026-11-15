@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Web;
 using System.Web.UI;
 
@@ -22,6 +22,9 @@ namespace KPSCObjections.Security
         private const string TokenCookie = "__AntiXsrfToken";
         private const string TokenKey = "__AntiXsrfToken";
         private const string UserKey = "__AntiXsrfUser";
+
+        /// <summary>Recognised by Application_Error, which answers 400 instead of 500.</summary>
+        public const string AntiXsrfFailedMessage = "Validation of Anti-XSRF token failed.";
 
         private string antiXsrfToken;
 
@@ -64,7 +67,7 @@ namespace KPSCObjections.Security
             else if ((string)ViewState[TokenKey] != antiXsrfToken
                   || (string)ViewState[UserKey] != CurrentUser())
             {
-                throw new InvalidOperationException("Validation of Anti-XSRF token failed.");
+                throw new InvalidOperationException(AntiXsrfFailedMessage);
             }
         }
 

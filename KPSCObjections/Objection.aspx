@@ -88,8 +88,6 @@
             </div>
 
             <div class="candidate-body">
-                <asp:HiddenField ID="hdnExamCode" runat="server" />
-
                 <!-- Shown when the objection window is not open -->
                 <asp:Label ID="lblNotice" runat="server" Visible="false"
                     CssClass="alert alert-warning d-block" />

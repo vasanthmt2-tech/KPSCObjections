@@ -43,7 +43,6 @@ namespace KPSCObjections
 
             if (!IsPostBack)
             {
-                hdnExamCode.Value = ssen.ExamCode;
                 BindSubject();
                 BindCategory();
 

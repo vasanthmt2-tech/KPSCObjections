@@ -7,6 +7,7 @@ using System.Web.Optimization;
 using System.Web.Routing;
 using System.Web.Security;
 using System.Web.SessionState;
+using System.Web.UI;
 using KPSCObjections.Security;
 
 namespace KPSCObjections
@@ -57,6 +58,26 @@ namespace KPSCObjections
             if (http != null && http.GetHttpCode() == 404)
                 return;
 
+            // A post whose ViewState, event validation or anti-forgery token was
+            // altered in the browser is an attack, not a fault: refuse it with
+            // 400 and one log line (no stack trace, so it cannot flood the log).
+            string tampering = TamperingReason(Server.GetLastError());
+
+            if (tampering != null)
+            {
+                AppLog.Write("WARN", "Tampered request rejected (" + tampering + ") from " +
+                             RequestThrottle.ClientIp(Context) + " " + Request.HttpMethod + " " + Request.Path);
+
+                Server.ClearError();
+                Response.Clear();
+                Response.StatusCode = 400;
+                Response.TrySkipIisCustomErrors = true;
+                Response.ContentType = "text/plain";
+                Response.Write("The request was rejected. Please reload the page and try again.");
+                Context.ApplicationInstance.CompleteRequest();
+                return;
+            }
+
             string path = "";
 
             try
@@ -70,6 +91,29 @@ namespace KPSCObjections
             }
 
             AppLog.Error(path + Environment.NewLine + ex);
+        }
+
+        /// <summary>What was tampered with, or null when the error is something else.</summary>
+        private static string TamperingReason(Exception ex)
+        {
+            for (Exception e = ex; e != null; e = e.InnerException)
+            {
+                if (e is ViewStateException)
+                    return "ViewState";
+
+                if (e is ArgumentException && e.Message.StartsWith("Invalid postback or callback argument", StringComparison.Ordinal))
+                    return "event validation";
+
+                if (e is InvalidOperationException && e.Message == SecureMasterPage.AntiXsrfFailedMessage)
+                    return "anti-forgery token";
+
+                HttpException http = e as HttpException;
+
+                if (http != null && http.WebEventCode == System.Web.Management.WebEventCodes.RuntimeErrorViewStateFailure)
+                    return "ViewState";
+            }
+
+            return null;
         }
     }
 }
