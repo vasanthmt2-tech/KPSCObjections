@@ -70,7 +70,7 @@ namespace KPSCObjections.Security
 
         /// <summary>
         /// Call from Application_EndRequest. Marks every outgoing cookie
-        /// (including ASP.NET_SessionId and the anti-XSRF cookie) Secure and HttpOnly.
+        /// (including the session and anti-XSRF cookies) Secure and HttpOnly.
         /// </summary>
         public static void OnEndRequest(HttpContext context)
         {

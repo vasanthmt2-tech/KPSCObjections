@@ -29,7 +29,14 @@ namespace KPSCObjections.Security
         private const string IssuedKey = "AuthIssuedUtc";
         private const string AgentKey = "AuthAgent";
         private const string TokenCookie = "KPSCObjAuth";
-        private const string SessionCookie = "ASP.NET_SessionId";
+        /// <summary>
+        /// The session cookie's name, as configured in sessionState cookieName
+        /// (unique to this portal, so signing out does not end the session of
+        /// another application on the same site).
+        /// </summary>
+        private static readonly string SessionCookie =
+            ((System.Web.Configuration.SessionStateSection)
+                System.Web.Configuration.WebConfigurationManager.GetSection("system.web/sessionState")).CookieName;
 
         public const string CandidateKey = "LoginValid";
         public const string AdminKey = "AdminUser";

@@ -19,7 +19,9 @@ namespace KPSCObjections.Security
     /// </summary>
     public class SecureMasterPage : MasterPage
     {
-        private const string TokenCookie = "__AntiXsrfToken";
+        // Named for this portal: the standard "__AntiXsrfToken" name is used by
+        // other ASP.NET applications that may share the site (Add Application).
+        private const string TokenCookie = "KPSCObj_AntiXsrf";
         private const string TokenKey = "__AntiXsrfToken";
         private const string UserKey = "__AntiXsrfUser";
 

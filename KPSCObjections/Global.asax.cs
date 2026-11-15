@@ -29,8 +29,36 @@ namespace KPSCObjections
             if (HttpsPolicy.OnBeginRequest(Context))
                 return;
 
+            KeepPostsToAspxPages();
+
             // Before session state is acquired, so a flood creates no sessions.
             Captcha.RejectIfFlooding(Context);
+        }
+
+        /// <summary>
+        /// FriendlyUrls answers "X.aspx" with a 301 redirect to "X". A browser
+        /// follows a 301 with a GET and drops the posted form, so a POST from
+        /// outside (SBI ePay posting encData to PaymentResponse.aspx) would
+        /// arrive empty. Serve such a POST at the extensionless address instead
+        /// of redirecting it. GET requests are still redirected as before.
+        /// </summary>
+        private void KeepPostsToAspxPages()
+        {
+            if (Request.HttpMethod != "POST")
+                return;
+
+            string path = Request.AppRelativeCurrentExecutionFilePath ?? "";
+
+            if (!path.EndsWith(".aspx", StringComparison.OrdinalIgnoreCase))
+                return;
+
+            string extensionless = path.Substring(0, path.Length - ".aspx".Length);
+
+            // Only for real pages, so nothing else becomes reachable this way.
+            if (!System.IO.File.Exists(Server.MapPath(path)))
+                return;
+
+            Context.RewritePath(extensionless, Request.PathInfo, Request.Url.Query.TrimStart('?'));
         }
 
         /// <summary>
