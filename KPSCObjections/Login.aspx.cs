@@ -137,9 +137,8 @@ namespace KPSCObjections
                 ? ddlExamination.SelectedValue.Trim()
                 : "";
 
-            // The captcha is single use: whatever happens next, a new one is needed.
-            bool captchaOk = ConsumeCaptcha();
-
+            // The fields are checked first, so a typing mistake does not cost the
+            // captcha: it stays on screen, still typed in.
             if (!RegNoPattern.IsMatch(regNo))
             {
                 ShowError("Please enter a valid Registration Number.");
@@ -152,7 +151,7 @@ namespace KPSCObjections
                 return;
             }
 
-            if (!captchaOk)
+            if (!CheckCaptcha())
             {
                 ShowError("Please enter the correct captcha.");
                 return;
@@ -210,7 +209,7 @@ namespace KPSCObjections
 
         /// <summary>Shown for every OTP request, whether or not the details matched.</summary>
         private static readonly string OtpRequestedMessage =
-            "If the Registration Number and Examination are correct, an OTP has been sent to the " +
+            "An OTP has been sent to the " +
             "registered mobile number. It is valid for 5 minutes.";
 
         // ---------------------------------------------------------------
@@ -332,12 +331,25 @@ namespace KPSCObjections
             RefreshCaptcha();
         }
 
-        /// <summary>Checks the entered captcha and always retires it.</summary>
-        private bool ConsumeCaptcha()
-        {
-            bool ok = Captcha.Consume(new HttpSessionStateWrapper(Session), txtCaptcha.Text);
+        /// <summary>
+        /// A correct captcha stays on screen and serves up to this many OTP
+        /// requests (Get OTP and Resends) before a new one is shown. SMS volume is
+        /// still limited by the 60-second wait per registration number and the
+        /// per-IP limit.
+        /// </summary>
+        private const int CaptchaUsesPerCode = 3;
 
-            RefreshCaptcha();
+        /// <summary>
+        /// Checks the entered captcha. A wrong one is replaced by a new image; a
+        /// correct one stays on screen until it has been used CaptchaUsesPerCode times.
+        /// </summary>
+        private bool CheckCaptcha()
+        {
+            bool retired;
+            bool ok = Captcha.Check(new HttpSessionStateWrapper(Session), txtCaptcha.Text, CaptchaUsesPerCode, out retired);
+
+            if (retired)
+                RefreshCaptcha();
 
             return ok;
         }

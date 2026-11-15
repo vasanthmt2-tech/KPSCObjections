@@ -23,6 +23,11 @@ namespace KPSCObjections
     {
         private const string SessionKey = "CaptchaCode";
 
+        // The refresh token the current code was drawn for, and how many times
+        // the code has been accepted (see Check).
+        private const string TokenKey = "CaptchaToken";
+        private const string UsesKey = "CaptchaUses";
+
         private const int Width = 180;
         private const int Height = 40;
 
@@ -82,9 +87,22 @@ namespace KPSCObjections
 
             try
             {
-                string captchaText = GenerateCaptchaText();
+                // The page asks for a new code by changing the "refresh" token in
+                // the image URL. The same URL again (the browser reloading the
+                // image after a postback, as images are never cached) redraws the
+                // current code identically instead of replacing it, so the captcha
+                // the user is reading does not change under them.
+                string token = Request.QueryString["refresh"] ?? "";
+                string captchaText = Session[SessionKey] as string;
 
-                Session[SessionKey] = captchaText;
+                if (captchaText == null || !string.Equals(Session[TokenKey] as string, token, StringComparison.Ordinal))
+                {
+                    captchaText = GenerateCaptchaText();
+
+                    Session[SessionKey] = captchaText;
+                    Session[TokenKey] = token;
+                    Session.Remove(UsesKey);
+                }
 
                 Response.ContentType = "image/png";
                 Render(captchaText);
@@ -105,7 +123,9 @@ namespace KPSCObjections
                 graphics.SmoothingMode = SmoothingMode.AntiAlias;
                 graphics.Clear(Color.White);
 
-                Random random = new Random();
+                // Same code, same picture: redrawing must not give OCR software
+                // several differently-noised copies of one code to compare.
+                Random random = new Random(StableSeed(captchaText));
 
                 // Background noise lines
                 using (Pen pen = new Pen(Color.LightGray, 1))
@@ -151,6 +171,36 @@ namespace KPSCObjections
         }
 
         /// <summary>
+        /// Checks the code the user typed and allows it to be used up to
+        /// <paramref name="maxUses"/> times (e.g. Get OTP and Resend OTP with the
+        /// same captcha). A wrong code is retired at once. <paramref name="retired"/>
+        /// tells the caller to show a new image (wrong, or uses used up).
+        /// </summary>
+        public static bool Check(HttpSessionStateBase session, string entered, int maxUses, out bool retired)
+        {
+            string expected = session[SessionKey] as string;
+
+            bool ok = !string.IsNullOrEmpty(expected)
+                && string.Equals((entered ?? "").Trim(), expected, StringComparison.OrdinalIgnoreCase);
+
+            int uses = (session[UsesKey] as int?) ?? 0;
+
+            if (!ok || uses + 1 >= maxUses)
+            {
+                session.Remove(SessionKey);
+                session.Remove(UsesKey);
+                retired = true;
+            }
+            else
+            {
+                session[UsesKey] = uses + 1;
+                retired = false;
+            }
+
+            return ok;
+        }
+
+        /// <summary>
         /// Checks the code the user typed against the one last shown to this
         /// session. The code is single use: it is removed whatever the result,
         /// so each attempt needs a new image.
@@ -169,6 +219,20 @@ namespace KPSCObjections
         public static string NewImageUrl()
         {
             return "~/Captcha?refresh=" + Guid.NewGuid().ToString("N");
+        }
+
+        /// <summary>A seed that depends only on the code (string.GetHashCode is not stable across runs).</summary>
+        private static int StableSeed(string text)
+        {
+            unchecked
+            {
+                int hash = 17;
+
+                foreach (char c in text)
+                    hash = hash * 31 + c;
+
+                return hash;
+            }
         }
 
         private static string GenerateCaptchaText()
