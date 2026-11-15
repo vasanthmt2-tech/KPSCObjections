@@ -23,11 +23,8 @@ namespace KPSCObjections
             ObjectionSession.LoginDetails candidate =
                 (ObjectionSession.LoginDetails)Session[AuthSession.CandidateKey];
 
-            // Pick up a payment whose response never reached us.
-            PaymentInfo pending = PaymentService.FindPending(candidate.RegNo);
-
-            if (pending != null)
-                PaymentService.Verify(pending.OrderNo);
+            // Pick up payments whose response never reached us.
+            PaymentService.VerifyCandidatePending(candidate.RegNo);
 
             gvObjections.DataSource = sh.ExecuteDataTable(
                 @"SELECT o.PaperCode, s.SubjectDescription AS SubjectCode, o.VersionCode, o.QuestionNo,

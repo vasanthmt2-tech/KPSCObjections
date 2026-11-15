@@ -47,10 +47,7 @@ namespace KPSCObjections
                 BindCategory();
 
                 // The candidate may be coming back from the payment page.
-                PaymentInfo pending = PaymentService.FindPending(ssen.RegNo);
-
-                if (pending != null)
-                    ShowPaymentOutcome(PaymentService.Verify(pending.OrderNo), false);
+                ShowPaymentOutcome(PaymentService.VerifyCandidatePending(ssen.RegNo), false);
 
                 RefreshState();
             }
@@ -65,13 +62,13 @@ namespace KPSCObjections
         ///  - while the window is open, new objections can always be added and
         ///    unpaid drafts deleted, even while a payment is being verified;
         ///  - the objections in a payment being verified cannot be changed;
-        ///  - Pay Now (for the drafts) waits until no payment is being verified,
-        ///    as only one payment at a time is allowed per candidate.
+        ///  - Pay Now pays for the unpaid drafts only, also while an earlier
+        ///    payment is being verified.
         /// </summary>
         private void RefreshState()
         {
             ObjectionWindow window = ObjectionRules.GetWindow(ssen.ExamCode);
-            PaymentInfo pending = PaymentService.FindPending(ssen.RegNo);
+            List<PaymentInfo> pending = PaymentService.FindAllPending(ssen.RegNo);
             DataTable rows = LoadDrafts();
 
             int draftCount = rows.AsEnumerable().Count(r => Convert.ToBoolean(r["IsDraft"]));
@@ -81,16 +78,21 @@ namespace KPSCObjections
             lblNotice.Visible = !window.IsOpen;
             lblNotice.Text = window.IsOpen ? "" : HttpUtility.HtmlEncode(window.ClosedMessage);
 
-            pnlPending.Visible = pending != null;
+            pnlPending.Visible = pending.Count > 0;
 
-            if (pending != null)
+            if (pending.Count > 0)
             {
+                string which = pending.Count == 1
+                    ? "A payment of Rs. " + SbiEpay.FormatAmount(pending[0].Amount) +
+                      " (reference " + pending[0].OrderNo + ") is"
+                    : pending.Count + " payments (" +
+                      string.Join(", ", pending.Select(p => "Rs. " + SbiEpay.FormatAmount(p.Amount) + " ref. " + p.OrderNo)) +
+                      ") are";
+
                 lblPending.Text = HttpUtility.HtmlEncode(
-                    "A payment of Rs. " + SbiEpay.FormatAmount(pending.Amount) +
-                    " (reference " + pending.OrderNo + ") is being verified. " +
-                    "If you have completed the payment, click Check Payment Status. " +
-                    "The objections in this payment cannot be changed. You can still add objections " +
-                    "for other questions; pay for them once this payment is resolved.");
+                    which + " being verified. If you have completed the payment, click Check Payment Status. " +
+                    "Objections in a payment being verified cannot be changed. You can still add objections " +
+                    "for other questions and pay for them with Pay Now.");
             }
 
             gvObjections.DataSource = rows;
@@ -99,7 +101,9 @@ namespace KPSCObjections
             // Last column holds the Delete button (shown on draft rows only).
             gvObjections.Columns[gvObjections.Columns.Count - 1].Visible = window.IsOpen;
 
-            btnPayNow.Visible = window.IsOpen && pending == null && draftCount > 0;
+            // Pay Now covers the unpaid drafts only; payments still being verified
+            // keep their own objections (migration 003).
+            btnPayNow.Visible = window.IsOpen && draftCount > 0;
 
             if (btnPayNow.Visible)
             {
@@ -148,21 +152,7 @@ namespace KPSCObjections
             return true;
         }
 
-        /// <summary>True when the drafts may be paid for: window open and no payment being verified.</summary>
-        private bool CanPay()
-        {
-            if (!CanEdit())
-                return false;
 
-            if (PaymentService.FindPending(ssen.RegNo) != null)
-            {
-                Alert("A payment is being verified. You can pay for your new objections once it is resolved.");
-                RefreshState();
-                return false;
-            }
-
-            return true;
-        }
 
         // ---------------------------------------------------------------
         // Add
@@ -485,7 +475,7 @@ namespace KPSCObjections
 
         protected void btnPayNow_Click(object sender, EventArgs e)
         {
-            if (!CanPay())
+            if (!CanEdit())
                 return;
 
             string orderNo;
@@ -508,7 +498,7 @@ namespace KPSCObjections
                     break;
 
                 default:
-                    Alert("A payment is already being verified.");
+                    Alert("The payment could not be started. Please try again.");
                     break;
             }
 
@@ -517,28 +507,34 @@ namespace KPSCObjections
 
         protected void btnCheckPayment_Click(object sender, EventArgs e)
         {
-            PaymentInfo pending = PaymentService.FindPending(ssen.RegNo);
-
-            if (pending != null)
-                ShowPaymentOutcome(PaymentService.Verify(pending.OrderNo), true);
+            ShowPaymentOutcome(PaymentService.VerifyCandidatePending(ssen.RegNo), true);
 
             RefreshState();
         }
 
-        private void ShowPaymentOutcome(string status, bool reportPending)
+        /// <summary>Tells the candidate what became of the payments just verified.</summary>
+        private void ShowPaymentOutcome(List<string> statuses, bool reportPending)
         {
-            if (status == PaymentService.Success)
-            {
-                Alert("Payment completed successfully. Your objections are submitted and listed under My Objections.");
-            }
-            else if (status == PaymentService.Failed)
-            {
-                Alert("The payment was not completed. Your objections are saved; click Pay Now to pay again.");
-            }
-            else if (reportPending)
-            {
-                Alert("The payment is not confirmed yet. Please check again after some time.");
-            }
+            int succeeded = statuses.Count(s => s == PaymentService.Success);
+            int failed = statuses.Count(s => s == PaymentService.Failed);
+            int stillPending = statuses.Count - succeeded - failed;
+
+            List<string> parts = new List<string>();
+
+            if (succeeded > 0)
+                parts.Add((succeeded == 1 ? "A payment was" : succeeded + " payments were") +
+                          " completed successfully; those objections are submitted and listed under My Objections.");
+
+            if (failed > 0)
+                parts.Add((failed == 1 ? "A payment was" : failed + " payments were") +
+                          " not completed; those objections are saved, click Pay Now to pay again.");
+
+            if (stillPending > 0 && (reportPending || parts.Count > 0))
+                parts.Add((stillPending == 1 ? "A payment is" : stillPending + " payments are") +
+                          " not confirmed yet. Please check again after some time.");
+
+            if (parts.Count > 0)
+                Alert(string.Join(" ", parts));
         }
 
         // ---------------------------------------------------------------

@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using KPSCObjections.Security;
 using System.Configuration;
 using System.Data;
@@ -46,8 +48,9 @@ namespace KPSCObjections.Payments
         }
 
         /// <summary>
-        /// Starts a payment covering all the candidate's draft objections.
-        /// Returns OK, PENDING_EXISTS, WINDOW_CLOSED or NO_DRAFTS.
+        /// Starts a payment covering all the candidate's draft objections. Earlier
+        /// payments still being verified keep their own objections and do not
+        /// block this one (migration 003). Returns OK, WINDOW_CLOSED or NO_DRAFTS.
         /// </summary>
         public static string Start(string regNo, out string orderNo, out decimal amount)
         {
@@ -77,15 +80,26 @@ namespace KPSCObjections.Payments
                 new SqlParameter("@Value", SqlDbType.VarChar, 50) { Value = orderNo ?? "" });
         }
 
-        /// <summary>The candidate's payment that is still awaiting verification, if any.</summary>
-        public static PaymentInfo FindPending(string regNo)
+        /// <summary>The candidate's payments still awaiting verification, oldest first (often none).</summary>
+        public static List<PaymentInfo> FindAllPending(string regNo)
         {
-            return Load(
-                "SELECT TOP 1 RegNo, MerchantOrderNo, Amount, PaymentStatus, SBIReferenceNo, " +
+            DataTable dt = new SqlHelper().ExecuteDataTable(
+                "SELECT RegNo, MerchantOrderNo, Amount, PaymentStatus, SBIReferenceNo, " +
                 "DATEDIFF(MINUTE, CreatedDate, GETDATE()) AS AgeMinutes " +
                 "FROM dbo.PaymentTransactions WHERE RegNo = @Value AND PaymentStatus = 'PENDING' " +
-                "ORDER BY PaymentId DESC",
+                "ORDER BY PaymentId",
                 new SqlParameter("@Value", SqlDbType.VarChar, 50) { Value = regNo ?? "" });
+
+            return dt.Rows.Cast<DataRow>().Select(ToInfo).ToList();
+        }
+
+        /// <summary>
+        /// Confirms every payment of the candidate still awaiting verification.
+        /// Returns the status of each afterwards (SUCCESS / FAILED / PENDING).
+        /// </summary>
+        public static List<string> VerifyCandidatePending(string regNo)
+        {
+            return FindAllPending(regNo).Select(p => Verify(p.OrderNo)).ToList();
         }
 
         /// <summary>
@@ -197,8 +211,11 @@ namespace KPSCObjections.Payments
             if (dt.Rows.Count == 0)
                 return null;
 
-            DataRow row = dt.Rows[0];
+            return ToInfo(dt.Rows[0]);
+        }
 
+        private static PaymentInfo ToInfo(DataRow row)
+        {
             return new PaymentInfo
             {
                 RegNo = Convert.ToString(row["RegNo"]),
