@@ -166,7 +166,12 @@ ORDER BY o.VersionCode;", "@PaperCode,@MasterQuestionNo", "@" + subjectCode + ",
                                 }
                                 catch (Exception ex)
                                 {
-                                    skipped.Add(dr["RegNo"] + " (" + ex.Message + ")");
+                                    // Our own reasons (page limit, empty file) are safe to list;
+                                    // anything else is logged and summarised.
+                                    skipped.Add(dr["RegNo"] + " (" + (ex is InvalidDataException
+                                        ? ex.Message
+                                        : ErrorReport.Handle(ex, "Stored PDF of " + dr["RegNo"] + " could not be cleaned",
+                                              "file is damaged or password-protected")) + ")");
                                     continue;
                                 }
 
@@ -262,8 +267,8 @@ ORDER BY o.VersionCode;", "@PaperCode,@MasterQuestionNo", "@" + subjectCode + ",
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Trace.TraceError("Payment re-verification failed: " + ex);
-                lblVerifyResult.Text = "Payments could not be re-checked. Please try again later.";
+                lblVerifyResult.Text = HttpUtility.HtmlEncode(ErrorReport.Handle(ex, "Payment re-verification failed",
+                    "Payments could not be re-checked. Please try again later."));
             }
         }
 

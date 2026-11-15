@@ -1,4 +1,5 @@
-using System;
+﻿using System;
+using KPSCObjections.Security;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
@@ -221,8 +222,8 @@ namespace KPSCObjections
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Trace.TraceError("Candidate Excel could not be read: " + ex.Message);
-                ShowMessage("The Excel file could not be read. Please check that it is a valid .xlsx file.", false);
+                ShowMessage(ErrorReport.Handle(ex, "Candidate Excel could not be read",
+                    "The Excel file could not be read. Please check that it is a valid .xlsx file."), false);
                 return;
             }
 
@@ -251,8 +252,8 @@ namespace KPSCObjections
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Trace.TraceError("Candidate upload failed: " + ex);
-                ShowMessage("Upload failed. Nothing was saved. Please try again.", false);
+                ShowMessage(ErrorReport.Handle(ex, "Candidate upload failed",
+                    "Upload failed. Nothing was saved. Please try again."), false);
                 return;
             }
 
@@ -511,8 +512,8 @@ namespace KPSCObjections
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Trace.TraceError("Candidate delete failed: " + ex);
-                ShowMessage("The candidate could not be deleted. Please try again.", false);
+                ShowMessage(ErrorReport.Handle(ex, "Candidate delete failed",
+                    "The candidate could not be deleted. Please try again."), false);
             }
 
             BindCandidates();
@@ -566,8 +567,8 @@ namespace KPSCObjections
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Trace.TraceError("Candidate delete-all failed: " + ex);
-                ShowMessage("The candidates could not be deleted. Please try again.", false);
+                ShowMessage(ErrorReport.Handle(ex, "Candidate delete-all failed",
+                    "The candidates could not be deleted. Please try again."), false);
             }
 
             gvCandidates.PageIndex = 0;
@@ -682,7 +683,7 @@ namespace KPSCObjections
         }
 
         /// <summary>Raised when the file contains register numbers already in the database.</summary>
-        private class DuplicateCandidatesException : Exception
+        private class DuplicateCandidatesException : UserFacingException
         {
             public DuplicateCandidatesException(string message) : base(message)
             {

@@ -448,7 +448,7 @@ namespace KPSCObjections
             catch (Exception ex)
             {
                 // Never log the OTP or credentials.
-                System.Diagnostics.Trace.TraceError("KPSC SMS Gateway error: " + ex.Message);
+                AppLog.Error("KPSC SMS Gateway error: " + ex);
 
                 return false;
             }

@@ -1,4 +1,5 @@
-using System;
+﻿using System;
+using KPSCObjections.Security;
 using System.Web;
 using KPSCObjections.Payments;
 
@@ -27,7 +28,7 @@ namespace KPSCObjections
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Trace.TraceError("Payment push could not be processed: " + ex.Message);
+                AppLog.Error("Payment push could not be processed: " + ex);
             }
 
             context.Response.ContentType = "text/plain";

@@ -1,4 +1,5 @@
-using System;
+﻿using System;
+using KPSCObjections.Security;
 using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
@@ -109,8 +110,7 @@ namespace KPSCObjections.Payments
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Trace.TraceError(
-                    "SBI status query failed for order " + payment.OrderNo + ": " + ex.Message);
+                AppLog.Error("SBI status query failed for order " + payment.OrderNo + ": " + ex);
 
                 return Pending;
             }

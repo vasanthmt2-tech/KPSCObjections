@@ -33,14 +33,28 @@ namespace KPSCObjections
             Captcha.RejectIfFlooding(Context);
         }
 
+        /// <summary>
+        /// Drops the Server header (e.g. "Microsoft-IIS/10.0") from every
+        /// response, including static files and error pages, so the server
+        /// software and version are not advertised.
+        /// </summary>
+        void Application_PreSendRequestHeaders(object sender, EventArgs e)
+        {
+            HttpContext context = HttpContext.Current;
+
+            if (context != null)
+                context.Response.Headers.Remove("Server");
+        }
+
         void Application_EndRequest(object sender, EventArgs e)
         {
             HttpsPolicy.OnEndRequest(Context);
         }
 
         /// <summary>
-        /// Logs every unhandled error. The error is left in place so that
-        /// customErrors in Web.config decides what the visitor sees.
+        /// Handles every unhandled error. Bad requests are answered here;
+        /// real faults are logged and left in place so that customErrors in
+        /// Web.config shows the generic error page.
         /// </summary>
         void Application_Error(object sender, EventArgs e)
         {
@@ -58,39 +72,110 @@ namespace KPSCObjections
             if (http != null && http.GetHttpCode() == 404)
                 return;
 
-            // A post whose ViewState, event validation or anti-forgery token was
-            // altered in the browser is an attack, not a fault: refuse it with
-            // 400 and one log line (no stack trace, so it cannot flood the log).
-            string tampering = TamperingReason(Server.GetLastError());
+            // Bad requests are the client's doing, not application faults. They
+            // get a short answer and one log line (no stack trace, so a flood of
+            // them cannot fill the log):
+            //  - a post whose ViewState, event validation or anti-forgery token
+            //    was altered in the browser (tampering);
+            //  - input that looks like script or markup (request validation);
+            //  - an upload over the size limit.
+            Exception last = Server.GetLastError();
+            string tampering = TamperingReason(last);
 
             if (tampering != null)
             {
-                AppLog.Write("WARN", "Tampered request rejected (" + tampering + ") from " +
-                             RequestThrottle.ClientIp(Context) + " " + Request.HttpMethod + " " + Request.Path);
-
-                Server.ClearError();
-                Response.Clear();
-                Response.StatusCode = 400;
-                Response.TrySkipIisCustomErrors = true;
-                Response.ContentType = "text/plain";
-                Response.Write("The request was rejected. Please reload the page and try again.");
-                Context.ApplicationInstance.CompleteRequest();
+                Reject(400, "Tampered request rejected (" + tampering + ")",
+                       "The request was rejected. Please reload the page and try again.");
                 return;
             }
 
-            string path = "";
+            if (Find<HttpRequestValidationException>(last) != null)
+            {
+                Reject(400, "Request with script or markup in its input rejected",
+                       "The request was rejected because it contains characters that are not allowed " +
+                       "(such as < or >). Please remove them and try again.");
+                return;
+            }
 
+            if (IsPostTooLarge(last))
+            {
+                Reject(413, "Upload over the size limit rejected",
+                       "The file is too large. Please upload a smaller file.");
+                return;
+            }
+
+            if (http != null && http.GetHttpCode() == 400)
+            {
+                Reject(400, "Malformed request rejected", "The request was rejected.");
+                return;
+            }
+
+            // A real fault: log it in full under a reference that the error page
+            // shows, so a user's report can be matched to the log entry. Nothing
+            // about the error itself is shown (customErrors mode="On").
+            string reference = ErrorReport.NewReference();
+
+            Context.Items[ErrorReferenceKey] = reference;
+
+            AppLog.Error("[" + reference + "] " + RequestLine() + Environment.NewLine + ex);
+        }
+
+        /// <summary>Read by Error.aspx to show the reference of the logged error.</summary>
+        public const string ErrorReferenceKey = "ErrorReference";
+
+        private void Reject(int status, string logMessage, string userMessage)
+        {
+            AppLog.Write("WARN", logMessage + " from " + RequestThrottle.ClientIp(Context) + " " + RequestLine());
+
+            Server.ClearError();
+            Response.Clear();
+            Response.StatusCode = status;
+            Response.TrySkipIisCustomErrors = true;
+            Response.ContentType = "text/plain";
+            Response.Write(userMessage);
+            Context.ApplicationInstance.CompleteRequest();
+        }
+
+        /// <summary>Method and path only: query strings and form values are never logged.</summary>
+        private string RequestLine()
+        {
             try
             {
-                // Path only: query strings and form values are not logged.
-                path = Request.HttpMethod + " " + Request.Path;
+                return Request.HttpMethod + " " + Request.Path;
             }
-            catch
+            catch (HttpException)
             {
                 // Request is not available during application start.
+                return "(no request)";
+            }
+        }
+
+        /// <summary>The request body was over maxRequestLength (checked through the whole chain:
+        /// the page wraps it in HttpUnhandledException, which is itself an HttpException).</summary>
+        private static bool IsPostTooLarge(Exception ex)
+        {
+            for (Exception e = ex; e != null; e = e.InnerException)
+            {
+                HttpException http = e as HttpException;
+
+                if (http != null &&
+                    (http.WebEventCode == System.Web.Management.WebEventCodes.RuntimeErrorPostTooLarge ||
+                     http.Message == "Maximum request length exceeded."))
+                    return true;
             }
 
-            AppLog.Error(path + Environment.NewLine + ex);
+            return false;
+        }
+
+        private static T Find<T>(Exception ex) where T : Exception
+        {
+            for (Exception e = ex; e != null; e = e.InnerException)
+            {
+                if (e is T)
+                    return (T)e;
+            }
+
+            return null;
         }
 
         /// <summary>What was tampered with, or null when the error is something else.</summary>

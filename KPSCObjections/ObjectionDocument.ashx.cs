@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Data;
 using System.Data.SqlClient;
 using System.Web;
@@ -60,7 +60,7 @@ namespace KPSCObjections
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Trace.TraceError("Stored PDF could not be cleaned, not served: " + ex.Message);
+                AppLog.Error("Stored PDF could not be cleaned, not served: " + ex);
                 context.Response.StatusCode = 404;
                 return;
             }

@@ -62,8 +62,8 @@ namespace KPSCObjections
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Trace.TraceError("Admin login failed: " + ex);
-                Alert("Login is temporarily unavailable. Please try again later.");
+                Alert(ErrorReport.Handle(ex, "Admin login failed",
+                    "Login is temporarily unavailable. Please try again later."));
                 return;
             }
 

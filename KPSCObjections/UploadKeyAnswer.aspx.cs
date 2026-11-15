@@ -1,4 +1,5 @@
 ﻿
+using KPSCObjections.Security;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -7,6 +8,7 @@ using System.Data.SqlClient;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
+using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using ClosedXML.Excel;
@@ -381,7 +383,7 @@ namespace KPSCObjections
 
                                 if (existingRecords > 0)
                                 {
-                                    throw new Exception(
+                                    throw new UserFacingException(
                                         "Key answers already exist for " +
                                         "the selected Exam Code and " +
                                         "Subject Code. Upload cancelled.");
@@ -556,24 +558,25 @@ namespace KPSCObjections
                     {
                         File.Delete(savedFilePath);
                     }
-                    catch
+                    catch (Exception cleanupEx)
                     {
-                        // File cleanup failed.
+                        AppLog.Error("Could not delete key answer file after a failed upload: " +
+                                     savedFilePath + Environment.NewLine + cleanupEx);
                     }
                 }
 
                 if (uploadCommitted)
                 {
-                    ShowMessage(
-                        "Upload was successful, but an error occurred " +
-                        "while refreshing the document grid: " +
-                        ex.Message,
+                    ShowMessage(ErrorReport.Handle(ex,
+                        "Key answer grid refresh after upload",
+                        "Upload was successful, but the list of documents could not be refreshed. Please reload the page."),
                         false);
                 }
                 else
                 {
-                    ShowMessage(
-                        "Upload failed: " + ex.Message,
+                    ShowMessage(ErrorReport.Handle(ex,
+                        "Key answer upload",
+                        "Upload failed. Nothing was saved. Please try again."),
                         false);
                 }
             }
@@ -618,8 +621,9 @@ namespace KPSCObjections
             }
             catch (Exception ex)
             {
-                ShowMessage(
-                    "Operation failed: " + ex.Message, false);
+                ShowMessage(ErrorReport.Handle(ex,
+                    "Key answer document " + e.CommandName + " " + documentId,
+                    "The operation could not be completed. Please try again."), false);
             }
         }
 
@@ -753,7 +757,7 @@ namespace KPSCObjections
                             {
                                 if (!dr.Read())
                                 {
-                                    throw new Exception(
+                                    throw new UserFacingException(
                                         "Uploaded document not found.");
                                 }
 
@@ -877,7 +881,8 @@ namespace KPSCObjections
             string message,
             bool success)
         {
-            lblMessage.Text = message;
+            // Encoded: messages may include file or sheet content.
+            lblMessage.Text = HttpUtility.HtmlEncode(message);
 
             lblMessage.ForeColor =
                 success ? Color.Green : Color.Red;

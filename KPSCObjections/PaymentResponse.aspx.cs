@@ -1,4 +1,5 @@
 ﻿using System;
+using KPSCObjections.Security;
 using System.Web;
 using KPSCObjections.Payments;
 
@@ -33,7 +34,7 @@ namespace KPSCObjections
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Trace.TraceError("Payment response could not be processed: " + ex.Message);
+                AppLog.Error("Payment response could not be processed: " + ex);
             }
 
             if (status == null)
