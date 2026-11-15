@@ -1,4 +1,4 @@
-<%@ Page Title="" Language="C#" MasterPageFile="~/Admin.Master" AutoEventWireup="true" CodeBehind="UploadCandidates.aspx.cs" Inherits="KPSCObjections.UploadCandidates" %>
+﻿<%@ Page Title="" Language="C#" MasterPageFile="~/Admin.Master" AutoEventWireup="true" CodeBehind="UploadCandidates.aspx.cs" Inherits="KPSCObjections.UploadCandidates" %>
 <asp:Content ID="Content1"
     ContentPlaceHolderID="MainContent"
     runat="server">
@@ -89,8 +89,7 @@
                 AllowPaging="True"
                 PageSize="50"
                 EmptyDataText="No candidates found."
-                OnPageIndexChanging="gvCandidates_PageIndexChanging"
-                OnRowCommand="gvCandidates_RowCommand">
+                OnPageIndexChanging="gvCandidates_PageIndexChanging">
 
                 <Columns>
 
@@ -107,19 +106,6 @@
                     <asp:BoundField DataField="MobileNo" HeaderText="MobileNo" />
                     <asp:BoundField DataField="P1VersionCode" HeaderText="P1 Version" />
                     <asp:BoundField DataField="P2VersionCode" HeaderText="P2 Version" />
-
-                    <asp:TemplateField HeaderText="Delete">
-                        <ItemTemplate>
-                            <asp:LinkButton ID="lnkDelete"
-                                runat="server"
-                                Text="Delete"
-                                CssClass="btn btn-danger btn-sm"
-                                CommandName="DeleteCandidate"
-                                CommandArgument='<%# Eval("RegNo") %>'
-                                OnClientClick="return confirm('Are you sure you want to delete this candidate?');">
-                            </asp:LinkButton>
-                        </ItemTemplate>
-                    </asp:TemplateField>
 
                 </Columns>
 

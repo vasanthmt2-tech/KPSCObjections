@@ -25,7 +25,8 @@ namespace KPSCObjections
     ///
     /// An upload is all or nothing: if any row is invalid, or any register
     /// number already exists, nothing is saved. A candidate who has filed an
-    /// objection or started a payment cannot be deleted.
+    /// objection or started a payment is kept by "Delete All". Single candidates
+    /// cannot be deleted from the grid.
     /// </summary>
     public partial class UploadCandidates : KPSCObjections.Security.AdminPage
     {
@@ -452,77 +453,6 @@ namespace KPSCObjections
         // DELETE
         // ---------------------------------------------------------
 
-        protected void gvCandidates_RowCommand(object sender, GridViewCommandEventArgs e)
-        {
-            if (e.CommandName != "DeleteCandidate")
-                return;
-
-            string examCode = SelectedExamCode;
-            string regNo = Convert.ToString(e.CommandArgument);
-
-            if (examCode.Length == 0 || !RegNoPattern.IsMatch(regNo))
-            {
-                ShowMessage("Invalid candidate selection.", false);
-                return;
-            }
-
-            try
-            {
-                // One statement batch: the checks and the delete see the same data.
-                object result = sh.ExecuteScalar(
-                    @"SET XACT_ABORT ON;
-                      BEGIN TRAN;
-                      DECLARE @Result varchar(10) = 'NOTFOUND';
-
-                      IF EXISTS (SELECT 1 FROM dbo.Candidate c WITH (UPDLOCK)
-                                 WHERE c.RegNo = @RegNo AND LTRIM(RTRIM(c.ExamCode)) = @ExamCode)
-                      BEGIN
-                          IF EXISTS (SELECT 1 FROM dbo.Candidate c
-                                     WHERE c.RegNo = @RegNo AND " + HasRecordsCondition + @")
-                              SET @Result = 'INUSE';
-                          ELSE
-                          BEGIN
-                              DELETE FROM dbo.CandidateOTP WHERE RegNo = @RegNo;
-                              DELETE FROM dbo.Candidate WHERE RegNo = @RegNo;
-                              SET @Result = 'DELETED';
-                          END
-                      END
-
-                      COMMIT;
-                      SELECT @Result;",
-                    new SqlParameter("@RegNo", SqlDbType.VarChar, 10) { Value = regNo },
-                    new SqlParameter("@ExamCode", SqlDbType.VarChar, 5) { Value = examCode });
-
-                switch (Convert.ToString(result))
-                {
-                    case "DELETED":
-                        ShowMessage("Candidate " + regNo + " deleted.", true);
-                        break;
-
-                    case "INUSE":
-                        ShowMessage(
-                            "Candidate " + regNo + " cannot be deleted: objections or payments " +
-                            "exist for this candidate.", false);
-                        break;
-
-                    default:
-                        ShowMessage("Candidate not found.", false);
-                        break;
-                }
-            }
-            catch (Exception ex)
-            {
-                ShowMessage(ErrorReport.Handle(ex, "Candidate delete failed",
-                    "The candidate could not be deleted. Please try again."), false);
-            }
-
-            BindCandidates();
-        }
-
-        /// <summary>
-        /// Deletes every candidate of the selected examination except those
-        /// with objections or payments, for redoing a wrong upload.
-        /// </summary>
         protected void btnDeleteAll_Click(object sender, EventArgs e)
         {
             string examCode = SelectedExamCode;
