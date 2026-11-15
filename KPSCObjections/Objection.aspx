@@ -195,7 +195,7 @@
                         </div>
                         <!-- File Upload -->
                         <div class="field-group">
-                            <label class="form-label" for="<%= fileDocs.ClientID %>">Supporting Document<span class="required">* (Upload only pdf files less than 1 MB)</span></label>
+                            <label class="form-label" for="<%= fileDocs.ClientID %>">Supporting Document <span class="text-muted">(optional; pdf only, less than 1 MB)</span></label>
                             <asp:FileUpload ID="fileDocs" runat="server" CssClass="form-select">
                               <%--  <asp:ListItem Text="570" Value="570" />
                                 <asp:ListItem Text="571" Value="571" />
@@ -250,6 +250,7 @@
                                     <ItemTemplate>
                                         <asp:HyperLink ID="lnkDocument" runat="server"
                                             Target="_blank"
+                                            Visible='<%# !(Eval("FileName") is DBNull) %>'
                                             Text='<%#: Eval("FileName") %>'
                                             NavigateUrl='<%# "~/ObjectionDocument.ashx?paper=" + HttpUtility.UrlEncode(Convert.ToString(Eval("SubjectCode"))) + "&q=" + Eval("QuestionNo") %>'>
                                         </asp:HyperLink>

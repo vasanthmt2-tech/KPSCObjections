@@ -44,6 +44,7 @@
                                     <ItemTemplate>
                                         <asp:HyperLink ID="lnkDocument" runat="server"
                                             Target="_blank"
+                                            Visible='<%# !(Eval("SupportingDocument") is DBNull) %>'
                                             Text='<%#: Eval("SupportingDocument") %>'
                                             NavigateUrl='<%# "~/ObjectionDocument.ashx?paper=" + HttpUtility.UrlEncode(Convert.ToString(Eval("PaperCode"))) + "&q=" + Eval("QuestionNo") %>'>
                                         </asp:HyperLink>

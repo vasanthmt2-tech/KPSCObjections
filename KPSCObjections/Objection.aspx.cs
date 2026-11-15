@@ -204,24 +204,24 @@ namespace KPSCObjections
                 return;
             }
 
-            if (!fileDocs.HasFile)
-            {
-                Alert("Please upload supporting document.");
-                return;
-            }
+            // The supporting document is optional; when given it must be a PDF.
+            byte[] fileData = null;
 
-            byte[] fileData = fileDocs.FileBytes;
-
-            if (fileData.Length > MaxPdfBytes)
+            if (fileDocs.HasFile)
             {
-                Alert("Supportive document file size should be less than 1 MB");
-                return;
-            }
+                fileData = fileDocs.FileBytes;
 
-            if (!IsPdf(fileDocs.FileName, fileData))
-            {
-                Alert("Upload only PDF file.");
-                return;
+                if (fileData.Length > MaxPdfBytes)
+                {
+                    Alert("Supportive document file size should be less than 1 MB");
+                    return;
+                }
+
+                if (!IsPdf(fileDocs.FileName, fileData))
+                {
+                    Alert("Upload only PDF file.");
+                    return;
+                }
             }
 
             // --- What the server knows; nothing below trusts the form ---
@@ -270,6 +270,29 @@ namespace KPSCObjections
                 return;
             }
 
+            // --- Print the objection's details on every page of the document ---
+
+            string fileName = null;
+
+            if (fileData != null)
+            {
+                try
+                {
+                    fileData = PdfHeaderStamper.Stamp(
+                        fileData,
+                        DocumentHeader(paperCode, questionNo, versionCode, keyAnswer, answers));
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Trace.TraceError("Supporting PDF could not be stamped: " + ex.Message);
+                    Alert("This PDF could not be processed. Please upload a PDF that is not " +
+                          "password-protected, or add the objection without a document.");
+                    return;
+                }
+
+                fileName = SafeFileName(fileDocs.FileName);
+            }
+
             // --- Save as a draft ---
 
             DataTable result = sh.ExecuteDataTable(
@@ -282,8 +305,8 @@ namespace KPSCObjections
                 new SqlParameter("@ObjectionAns", SqlDbType.VarChar, 10) { Value = string.Join(",", answers) },
                 new SqlParameter("@CategoryCode", SqlDbType.Int) { Value = categoryCode },
                 new SqlParameter("@Remarks", SqlDbType.NVarChar, MaxRemarks) { Value = remarks },
-                new SqlParameter("@FileName", SqlDbType.VarChar, MaxFileName) { Value = SafeFileName(fileDocs.FileName) },
-                new SqlParameter("@ObjectionDocs", SqlDbType.VarBinary, -1) { Value = fileData },
+                new SqlParameter("@FileName", SqlDbType.VarChar, MaxFileName) { Value = (object)fileName ?? DBNull.Value },
+                new SqlParameter("@ObjectionDocs", SqlDbType.VarBinary, -1) { Value = (object)fileData ?? DBNull.Value },
                 new SqlParameter("@User", SqlDbType.VarChar, 50) { Value = ssen.RegNo },
                 new SqlParameter("@IPAddress", SqlDbType.VarChar, 45) { Value = Request.UserHostAddress ?? "" });
 
@@ -342,6 +365,24 @@ namespace KPSCObjections
                 return "Only one Objection Answer can be selected for this category.";
 
             return null;
+        }
+
+        /// <summary>
+        /// The line printed at the top of every page of a supporting document.
+        /// Answer 5 is shown as "Grace", as it is on the form.
+        /// </summary>
+        private string DocumentHeader(
+            string paperCode, int questionNo, string versionCode, string keyAnswer, List<string> answers)
+        {
+            string objectionAnswer = string.Join(", ",
+                answers.Select(a => a == GraceAnswer ? "Grace" : a));
+
+            return "Reg No: " + ssen.RegNo +
+                   "  |  Paper: " + paperCode +
+                   "  |  Q.No: " + questionNo +
+                   "  |  Version: " + versionCode +
+                   "  |  Key Answer: " + keyAnswer +
+                   "  |  Objection Answer: " + objectionAnswer;
         }
 
         /// <summary>A .pdf file whose content starts with the PDF signature.</summary>
