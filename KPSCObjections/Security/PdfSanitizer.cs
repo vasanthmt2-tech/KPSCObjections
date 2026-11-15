@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -37,6 +37,16 @@ namespace KPSCObjections.Security
             "/EmbeddedFiles", "/XFA", "/AcroForm", "/Names", "/Annots", "/A",
         };
 
+        /// <summary>
+        /// Page entries never copied into the clean document: annotations (links,
+        /// form fields, attachments, media), page actions, article beads, and
+        /// entries that only point at document structure left behind anyway.
+        /// </summary>
+        private static readonly string[] PageKeysNotCopied =
+        {
+            "/Annots", "/AA", "/B", "/StructParents", "/Tabs", "/Thumb", "/PieceInfo", "/Metadata"
+        };
+
         public sealed class Result
         {
             public byte[] Pdf;
@@ -55,6 +65,80 @@ namespace KPSCObjections.Security
             if (pdf == null || pdf.Length == 0)
                 throw new InvalidDataException("The file is empty.");
 
+            // An encrypted PDF cannot be cleaned: its content is unreadable
+            // without the password. (PDFsharp 6 would open it anyway and copy the
+            // still-encrypted content, producing a broken file.)
+            if (IsEncrypted(pdf))
+                throw new InvalidDataException("The PDF is password-protected or encrypted.");
+
+            try
+            {
+                return Rebuild(pdf, maxPages);
+            }
+            catch (InvalidDataException)
+            {
+                throw;
+            }
+            catch (Exception first)
+            {
+                // Some valid files make PDFsharp fail while copying pages into the
+                // new document (seen with PDFs that were edited after saving, i.e.
+                // incremental updates). Saving the file once through PDFsharp
+                // rewrites it as one plain file; the copy then works. The result
+                // is still rebuilt from its pages only, exactly as above.
+                byte[] normalised;
+
+                try
+                {
+                    normalised = Normalise(pdf);
+                }
+                catch
+                {
+                    throw first;
+                }
+
+                return Rebuild(normalised, maxPages);
+            }
+        }
+
+        /// <summary>Opens the file for editing and saves it again, as one plain file.</summary>
+        private static byte[] Normalise(byte[] pdf)
+        {
+            using (MemoryStream input = new MemoryStream(pdf))
+            using (PdfDocument document = PdfReader.Open(input, PdfDocumentOpenMode.Modify))
+            using (MemoryStream output = new MemoryStream())
+            {
+                document.Save(output, false);
+                return output.ToArray();
+            }
+        }
+
+        /// <summary>
+        /// True when the file has an /Encrypt entry. It sits in the trailer or the
+        /// cross-reference stream dictionary, which are never compressed, so it can
+        /// be found in the raw bytes.
+        /// </summary>
+        private static bool IsEncrypted(byte[] pdf)
+        {
+            string text = System.Text.Encoding.GetEncoding(28591).GetString(pdf);
+            int at = 0;
+
+            while ((at = text.IndexOf("/Encrypt", at, StringComparison.Ordinal)) >= 0)
+            {
+                at += "/Encrypt".Length;
+
+                // "/EncryptMetadata" and the like are other keys; /Encrypt itself is
+                // followed by a delimiter (space, line break, "<<" or a reference).
+                if (at >= text.Length || !char.IsLetterOrDigit(text[at]))
+                    return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>Builds the new, clean document from the pages of <paramref name="pdf"/>.</summary>
+        private static Result Rebuild(byte[] pdf, int maxPages)
+        {
             Result result = new Result();
 
             using (MemoryStream input = new MemoryStream(pdf))
@@ -71,12 +155,27 @@ namespace KPSCObjections.Security
 
                 foreach (PdfPage page in source.Pages)
                 {
-                    // Recorded from the original: copying may already drop these.
-                    if (page.Elements.ContainsKey("/Annots"))
-                        result.Removed.Add("page annotations");
+                    // Annotations, page actions and the rest are removed from the
+                    // source page before it is copied, so the copy never follows
+                    // their references at all. (Some edited PDFs have annotations
+                    // pointing at objects that no longer exist, which made the copy
+                    // fail.) The same keys are removed from the copy again below.
+                    foreach (string key in PageKeysNotCopied)
+                    {
+                        if (page.Elements.ContainsKey(key))
+                        {
+                            page.Elements.Remove(key);
 
-                    if (page.Elements.ContainsKey("/AA"))
-                        result.Removed.Add("page actions");
+                            // Only active content is reported (and logged); the
+                            // structural entries are harmless and just not copied.
+                            if (key == "/Annots")
+                                result.Removed.Add("page annotations");
+                            else if (key == "/AA")
+                                result.Removed.Add("page actions");
+                            else if (key == "/B")
+                                result.Removed.Add("page article beads");
+                        }
+                    }
 
                     PdfPage copy = clean.AddPage(page);
 

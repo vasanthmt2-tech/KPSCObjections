@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -121,7 +121,7 @@ namespace KPSCObjections.Payments
                 }
 
                 double available = Math.Max(20, width - 2 * SideMargin);
-                XFont font = new XFont(FontName, FontSize, XFontStyle.Bold);
+                XFont font = new XFont(FontName, FontSize, XFontStyleEx.Bold);
 
                 // One line on an ordinary page; a narrow page (a receipt, a
                 // phone screenshot) gets as many lines as the text needs.
@@ -133,7 +133,7 @@ namespace KPSCObjections.Payments
                 while (size > MinFontSize && lines.Any(l => gfx.MeasureString(l, font).Width > available))
                 {
                     size -= 0.5;
-                    font = new XFont(FontName, size, XFontStyle.Bold);
+                    font = new XFont(FontName, size, XFontStyleEx.Bold);
                 }
 
                 double stripHeight = lines.Count == 1

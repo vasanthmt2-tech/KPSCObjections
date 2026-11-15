@@ -23,6 +23,12 @@ namespace KPSCObjections
             // Trace.TraceError(...) anywhere in the app ends up in App_Data\logs.
             Trace.Listeners.Add(new AppLogTraceListener());
 
+            // PDFsharp 6 (platform-independent build) must be told to use the fonts
+            // installed in Windows (Arial, for the header stamped on supporting PDFs).
+            // It may be set only once and before PDFsharp reads it, so it is done
+            // here, before any PDF is processed.
+            PdfSharp.Fonts.GlobalFontSettings.UseWindowsFontsUnderWindows = true;
+
             // Re-check payments still awaiting verification every few minutes.
             KPSCObjections.Payments.PendingPaymentChecker.Start();
 
