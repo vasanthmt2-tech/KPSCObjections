@@ -31,6 +31,45 @@ namespace KPSCObjections.Payments
         public string Reason;
         public DateTime? TransactionDate;
         public string Raw;
+
+        /// <summary>
+        /// True when a FAIL from the status query does not describe a real
+        /// transaction: SBI refused or could not answer the query itself (for
+        /// example "Wrong Source" when the request does not come from a
+        /// registered server), or the reply carries no transaction reference
+        /// (ATRN). Such a reply says nothing about whether the candidate paid,
+        /// so it must not mark the payment as failed.
+        /// </summary>
+        public bool IsQueryRefusal
+        {
+            get
+            {
+                if (Status != SbiStatus.Failed)
+                    return false;
+
+                string atrn = (Atrn ?? "").Trim();
+
+                if (atrn.Length == 0 || atrn.Equals("NA", StringComparison.OrdinalIgnoreCase))
+                    return true;
+
+                string reason = (Reason ?? "").ToUpperInvariant();
+
+                foreach (string marker in QueryErrorMarkers)
+                {
+                    if (reason.Contains(marker))
+                        return true;
+                }
+
+                return false;
+            }
+        }
+
+        /// <summary>Reasons SBI gives when it rejects the status query rather than reporting a payment.</summary>
+        private static readonly string[] QueryErrorMarkers =
+        {
+            "WRONG SOURCE", "INVALID REQUEST", "INVALID MERCHANT", "UNAUTHORI", "NOT AUTHORI",
+            "ACCESS DENIED", "NOT ALLOWED", "NOT WHITELISTED", "INVALID IP"
+        };
     }
 
     /// <summary>

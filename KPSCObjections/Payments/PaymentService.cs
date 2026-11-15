@@ -147,8 +147,28 @@ namespace KPSCObjections.Payments
                     break;
 
                 case SbiStatus.Failed:
-                    if (Matches(result, payment))
+                    if (result.IsQueryRefusal)
+                    {
+                        // SBI refused the status query (e.g. "Wrong Source": this
+                        // server is not registered for the query API) or gave no
+                        // transaction details. The candidate may well have paid, so
+                        // the payment stays pending until a query really answers.
+                        // Logged at most once an hour per order: the automatic
+                        // re-check asks every few minutes.
+                        if (System.Web.HttpRuntime.Cache.Add("sbi-refused:" + payment.OrderNo, true, null,
+                                DateTime.UtcNow.AddHours(1), System.Web.Caching.Cache.NoSlidingExpiration,
+                                System.Web.Caching.CacheItemPriority.Normal, null) == null)
+                        {
+                            AppLog.Write("WARN", "SBI status query for order " + payment.OrderNo +
+                                         " was refused or gave no transaction (\"" + result.Reason +
+                                         "\"); payment left pending. Check that this server's IP is " +
+                                         "registered with SBI ePay for the status query.");
+                        }
+                    }
+                    else if (Matches(result, payment))
+                    {
                         outcome = Failed;
+                    }
                     break;
 
                 case SbiStatus.NotFound:

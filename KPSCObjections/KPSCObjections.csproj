@@ -312,6 +312,7 @@
     <Compile Include="Payments\ObjectionRules.cs" />
     <Compile Include="Payments\PdfHeaderStamper.cs" />
     <Compile Include="Payments\PaymentService.cs" />
+    <Compile Include="Payments\PendingPaymentChecker.cs" />
     <Compile Include="Payments\SbiEpay.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Security\AdminAuth.cs" />

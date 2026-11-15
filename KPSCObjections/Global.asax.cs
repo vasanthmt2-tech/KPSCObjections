@@ -23,6 +23,9 @@ namespace KPSCObjections
             // Trace.TraceError(...) anywhere in the app ends up in App_Data\logs.
             Trace.Listeners.Add(new AppLogTraceListener());
 
+            // Re-check payments still awaiting verification every few minutes.
+            KPSCObjections.Payments.PendingPaymentChecker.Start();
+
             // OTPs and the gateway credentials must not cross the network unencrypted.
             string smsUrl = System.Configuration.ConfigurationManager.AppSettings["SMSUrl"] ?? "";
 
