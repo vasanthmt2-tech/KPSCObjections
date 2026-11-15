@@ -81,7 +81,6 @@
                     <div class="captcha-display">
                         <asp:Image ID="imgCaptcha"
                             runat="server"
-                            ImageUrl="~/Captcha"
                             AlternateText="Captcha" />
 
                         <asp:LinkButton ID="btnRefreshCaptcha"

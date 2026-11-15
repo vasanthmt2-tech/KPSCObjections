@@ -57,6 +57,7 @@ namespace KPSCObjections
 
                 lblMessage.Text = "";
                 BindExamination();
+                RefreshCaptcha();
             }
         }
 
@@ -346,7 +347,7 @@ namespace KPSCObjections
         private bool CheckCaptcha()
         {
             bool retired;
-            bool ok = Captcha.Check(new HttpSessionStateWrapper(Session), txtCaptcha.Text, CaptchaUsesPerCode, out retired);
+            bool ok = Captcha.Check(CaptchaToken, txtCaptcha.Text, CaptchaUsesPerCode, out retired);
 
             if (retired)
                 RefreshCaptcha();
@@ -357,7 +358,19 @@ namespace KPSCObjections
         private void RefreshCaptcha()
         {
             txtCaptcha.Text = "";
-            imgCaptcha.ImageUrl = Captcha.NewImageUrl();
+            CaptchaToken = Captcha.NewToken();
+            imgCaptcha.ImageUrl = Captcha.ImageUrl(CaptchaToken);
+        }
+
+        /// <summary>
+        /// The captcha this page shows. Kept in the page's own ViewState
+        /// (encrypted and signed), so loading the image URL elsewhere, or another
+        /// tab, cannot change the code this page checks.
+        /// </summary>
+        private string CaptchaToken
+        {
+            get { return ViewState["CaptchaToken"] as string; }
+            set { ViewState["CaptchaToken"] = value; }
         }
 
         // ---------------------------------------------------------------

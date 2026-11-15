@@ -13,6 +13,9 @@ namespace KPSCObjections
             {
                 Response.Redirect("~/UploadKeyAnswer.aspx", true);
             }
+
+            if (!IsPostBack)
+                RefreshCaptcha();
         }
 
         protected void btnLogin_Click(object sender, EventArgs e)
@@ -30,7 +33,7 @@ namespace KPSCObjections
             }
 
             // The captcha is single use: whatever happens next, a new one is shown.
-            bool captchaOk = Captcha.Consume(new HttpSessionStateWrapper(Session), txtCaptcha.Text);
+            bool captchaOk = Captcha.Consume(CaptchaToken, txtCaptcha.Text);
             RefreshCaptcha();
 
             if (string.IsNullOrWhiteSpace(userName))
@@ -103,7 +106,19 @@ namespace KPSCObjections
         private void RefreshCaptcha()
         {
             txtCaptcha.Text = "";
-            imgCaptcha.ImageUrl = Captcha.NewImageUrl();
+            CaptchaToken = Captcha.NewToken();
+            imgCaptcha.ImageUrl = Captcha.ImageUrl(CaptchaToken);
+        }
+
+        /// <summary>
+        /// The captcha this page shows. Kept in the page's own ViewState
+        /// (encrypted and signed), so loading the image URL elsewhere, or another
+        /// tab, cannot change the code this page checks.
+        /// </summary>
+        private string CaptchaToken
+        {
+            get { return ViewState["CaptchaToken"] as string; }
+            set { ViewState["CaptchaToken"] = value; }
         }
 
         private void Alert(string message)

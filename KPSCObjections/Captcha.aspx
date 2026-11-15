@@ -1,4 +1,4 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="Captcha.aspx.cs" Inherits="KPSCObjections.Captcha" %>
+﻿<%@ Page Language="C#" AutoEventWireup="true" EnableSessionState="False" EnableViewState="false" CodeBehind="Captcha.aspx.cs" Inherits="KPSCObjections.Captcha" %>
 
 <!DOCTYPE html>
 
