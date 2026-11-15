@@ -278,15 +278,27 @@ namespace KPSCObjections
             {
                 try
                 {
+                    // Rebuild the file without scripts, actions, attachments or
+                    // forms, so nobody who opens it later can be attacked by it.
+                    PdfSanitizer.Result clean = PdfSanitizer.Sanitize(fileData);
+
+                    if (clean.Removed.Count > 0)
+                    {
+                        AppLog.Write("WARN", "Active content removed from supporting PDF uploaded by " +
+                                     ssen.RegNo + " from " + Request.UserHostAddress + ": " +
+                                     string.Join(", ", clean.Removed));
+                    }
+
                     fileData = PdfHeaderStamper.Stamp(
-                        fileData,
+                        clean.Pdf,
                         DocumentHeader(paperCode, questionNo, versionCode, keyAnswer, answers));
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Trace.TraceError("Supporting PDF could not be stamped: " + ex.Message);
-                    Alert("This PDF could not be processed. Please upload a PDF that is not " +
-                          "password-protected, or add the objection without a document.");
+                    System.Diagnostics.Trace.TraceError("Supporting PDF rejected for " + ssen.RegNo + ": " + ex.Message);
+                    Alert("This PDF could not be processed. Please upload a PDF of up to " +
+                          PdfSanitizer.DefaultMaxPages + " pages that is not password-protected, " +
+                          "or add the objection without a document.");
                     return;
                 }
 

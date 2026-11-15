@@ -1,4 +1,5 @@
 ﻿using KPSCObjections.DLL;
+using KPSCObjections.Security;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -99,6 +100,9 @@ ORDER BY
 
             //string connectionString = ConfigurationManager.ConnectionStrings["DefaultConnection"].ConnectionString;
 
+            // Documents that could not be cleaned are left out and listed in the zip.
+            List<string> skipped = new List<string>();
+
             using (MemoryStream ms = new MemoryStream())
             {
                 using (ZipArchive zip = new ZipArchive(ms, ZipArchiveMode.Create, true))
@@ -152,7 +156,19 @@ ORDER BY o.VersionCode;", "@PaperCode,@MasterQuestionNo", "@" + subjectCode + ",
                                 if (dr["ObjectionDocs"] == DBNull.Value)
                                     continue;
 
-                                byte[] pdfData = (byte[])dr["ObjectionDocs"];
+                                byte[] pdfData;
+
+                                try
+                                {
+                                    // Cleaned again here so files stored before
+                                    // upload cleaning existed are safe to open too.
+                                    pdfData = PdfSanitizer.Sanitize((byte[])dr["ObjectionDocs"]).Pdf;
+                                }
+                                catch (Exception ex)
+                                {
+                                    skipped.Add(dr["RegNo"] + " (" + ex.Message + ")");
+                                    continue;
+                                }
 
                                 string fileName =
                                     dr["FileName"] == DBNull.Value ? "Objection_" + (++count) + ".pdf" : Path.GetFileName(dr["FileName"].ToString());
@@ -175,6 +191,18 @@ ORDER BY o.VersionCode;", "@PaperCode,@MasterQuestionNo", "@" + subjectCode + ",
                                 count++;
                             }
                         }
+
+                    if (skipped.Count > 0)
+                    {
+                        ZipArchiveEntry note = zip.CreateEntry("NOT_INCLUDED.txt");
+
+                        using (StreamWriter writer = new StreamWriter(note.Open()))
+                        {
+                            writer.WriteLine("These documents could not be checked for harmful content and were left out:");
+                            foreach (string s in skipped)
+                                writer.WriteLine(s);
+                        }
+                    }
                 }
 
                 if (ms.Length == 0)

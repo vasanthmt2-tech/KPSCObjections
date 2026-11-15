@@ -50,7 +50,20 @@ namespace KPSCObjections
                 return;
             }
 
-            byte[] data = (byte[])dt.Rows[0]["ObjectionDocs"];
+            byte[] data;
+
+            try
+            {
+                // Uploads are cleaned when saved; cleaning again here also covers
+                // files stored before that was done.
+                data = PdfSanitizer.Sanitize((byte[])dt.Rows[0]["ObjectionDocs"]).Pdf;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Trace.TraceError("Stored PDF could not be cleaned, not served: " + ex.Message);
+                context.Response.StatusCode = 404;
+                return;
+            }
 
             context.Response.ContentType = "application/pdf";
             context.Response.AddHeader("Content-Disposition",
