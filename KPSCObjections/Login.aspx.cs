@@ -24,6 +24,7 @@ namespace KPSCObjections
     {
         private const string OtpRegNoKey = "OTPRegNo";
         private const string OtpExamKey = "OTPExamCode";
+        private const string OtpRequestedAtKey = "OTPRequestedAtUtc";
 
         private const int MaxOtpAttempts = 5;
         private const int ResendWaitSeconds = 60;
@@ -70,11 +71,67 @@ namespace KPSCObjections
 
         protected void btnResendOTP_Click(object sender, EventArgs e)
         {
+            // The button is disabled until the wait is over; this also stops a
+            // resend posted early by other means.
+            int wait = SecondsUntilResend();
+
+            if (wait > 0)
+            {
+                ShowError("Please wait " + wait + " seconds before requesting a new OTP.");
+                return;
+            }
+
             RequestOtp();
+        }
+
+        /// <summary>Seconds left before Resend OTP may be used in this session (0 = now).</summary>
+        private int SecondsUntilResend()
+        {
+            if (!(Session[OtpRequestedAtKey] is DateTime))
+                return 0;
+
+            double elapsed = (DateTime.UtcNow - (DateTime)Session[OtpRequestedAtKey]).TotalSeconds;
+
+            return Math.Max(0, (int)Math.Ceiling(ResendWaitSeconds - elapsed));
+        }
+
+        /// <summary>
+        /// Resend OTP is disabled until an OTP has been requested and 60 seconds
+        /// have passed; the seconds left go to the message label, where
+        /// Scripts/login-otp.js counts down and enables the button.
+        ///
+        /// Disabled with the HTML attribute, not Enabled = false: a control
+        /// disabled on the server is left out of event validation, so the click
+        /// after the script re-enables it would be rejected as tampering.
+        /// </summary>
+        protected override void OnPreRender(EventArgs e)
+        {
+            base.OnPreRender(e);
+
+            bool otpRequested = Session[OtpRegNoKey] is string;
+            int wait = SecondsUntilResend();
+
+            if (!otpRequested || wait > 0)
+                btnResendOTP.Attributes["disabled"] = "disabled";
+            else
+                btnResendOTP.Attributes.Remove("disabled");
+
+            if (otpRequested && wait > 0)
+                lblMessage.Attributes["data-resend-seconds"] = wait.ToString();
+            else
+                lblMessage.Attributes.Remove("data-resend-seconds");
         }
 
         private void RequestOtp()
         {
+            // Per-IP limit on OTP requests (Get OTP and Resend OTP together),
+            // checked before the captcha is used up.
+            if (!RequestThrottle.AllowLoginAttempt(Context, "OTP request", "LoginOtpRequestsPerIpPerMinute", 20))
+            {
+                ShowError(RequestThrottle.TooManyAttemptsMessage);
+                return;
+            }
+
             string regNo = txtRegisterNumber.Text.Trim();
             string examCode = ddlExamination.SelectedIndex > 0
                 ? ddlExamination.SelectedValue.Trim()
@@ -108,6 +165,7 @@ namespace KPSCObjections
             // like a wrong OTP.
             Session[OtpRegNoKey] = regNo;
             Session[OtpExamKey] = examCode;
+            Session[OtpRequestedAtKey] = DateTime.UtcNow;
             txtOTP.Text = "";
 
             string mobile = GetRegisteredMobile(regNo, examCode);
@@ -153,8 +211,7 @@ namespace KPSCObjections
         /// <summary>Shown for every OTP request, whether or not the details matched.</summary>
         private static readonly string OtpRequestedMessage =
             "If the Registration Number and Examination are correct, an OTP has been sent to the " +
-            "registered mobile number. It is valid for 5 minutes. If it does not arrive, check the " +
-            "details and request again after " + ResendWaitSeconds + " seconds.";
+            "registered mobile number. It is valid for 5 minutes.";
 
         // ---------------------------------------------------------------
         // Step 2: verify the OTP and sign in
@@ -162,6 +219,13 @@ namespace KPSCObjections
 
         protected void btnLogin_Click(object sender, EventArgs e)
         {
+            // Per-IP limit on OTP login attempts (on top of 5 attempts per OTP).
+            if (!RequestThrottle.AllowLoginAttempt(Context, "OTP login", "LoginOtpChecksPerIpPerMinute", 20))
+            {
+                ShowError(RequestThrottle.TooManyAttemptsMessage);
+                return;
+            }
+
             string regNo = Session[OtpRegNoKey] as string;
             string examCode = Session[OtpExamKey] as string;
 
@@ -523,13 +587,13 @@ namespace KPSCObjections
 
         private void ShowError(string message)
         {
-            lblMessage.CssClass = "text-danger mt-3 d-block";
+            lblMessage.CssClass = "text-danger mt-3 d-block login-message";
             lblMessage.Text = message;
         }
 
         private void ShowSuccess(string message)
         {
-            lblMessage.CssClass = "text-success mt-3 d-block";
+            lblMessage.CssClass = "text-success mt-3 d-block login-message";
             lblMessage.Text = message;
         }
     }

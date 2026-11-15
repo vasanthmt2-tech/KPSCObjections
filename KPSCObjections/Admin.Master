@@ -16,6 +16,8 @@
         <%: Scripts.Render("~/bundles/modernizr") %>
         <%-- Lets AutoPostBack controls work under the Content-Security-Policy (no unsafe-eval). --%>
         <script src="<%: ResolveUrl("~/Scripts/postback-csp.js") %>"></script>
+        <%-- No right-click menu (except in text boxes). --%>
+        <script src="<%: ResolveUrl("~/Scripts/no-context-menu.js") %>"></script>
     </asp:PlaceHolder>
 
     <webopt:bundlereference runat="server" path="~/Content/css" />

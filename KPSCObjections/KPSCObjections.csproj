@@ -198,6 +198,8 @@
     <Content Include="MyObjections.aspx" />
     <Content Include="Objection.aspx" />
     <Content Include="PaymentResponse.aspx" />
+    <Content Include="Scripts\login-otp.js" />
+    <Content Include="Scripts\no-context-menu.js" />
     <Content Include="Scripts\postback-csp.js" />
     <Content Include="Scripts\modernizr-2.8.3.js" />
     <Content Include="Scripts\WebForms\DetailsView.js" />

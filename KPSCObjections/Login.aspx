@@ -93,7 +93,7 @@
                 <%-- Status Message --%>
                 <asp:Label ID="lblMessage"
                     runat="server"
-                    CssClass="text-danger mt-3 d-block">
+                    CssClass="text-danger mt-3 d-block login-message">
                 </asp:Label>
 
                 <%-- Step 2: enter the OTP and log in --%>
@@ -132,4 +132,7 @@
         </div>
 
     </div>
+
+    <%-- Resend OTP countdown (see Login.aspx.cs OnPreRender) --%>
+    <script src="<%: ResolveUrl("~/Scripts/login-otp.js") %>"></script>
 </asp:Content>

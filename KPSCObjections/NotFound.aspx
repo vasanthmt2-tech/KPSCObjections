@@ -1,4 +1,4 @@
-<%@ Page Language="C#" EnableSessionState="false" EnableViewState="false" %>
+﻿<%@ Page Language="C#" EnableSessionState="false" EnableViewState="false" %>
 <%-- Shown for addresses that do not exist (customErrors / httpErrors in Web.config). --%>
 <script runat="server">
     protected void Page_Load(object sender, EventArgs e)
@@ -21,6 +21,7 @@
         p { color: #444; line-height: 1.5; }
         a { color: #0d6efd; }
     </style>
+    <script src="<%: ResolveUrl("~/Scripts/no-context-menu.js") %>"></script>
 </head>
 <body>
     <div class="box">

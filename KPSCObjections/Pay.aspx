@@ -1,10 +1,11 @@
-<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="Pay.aspx.cs" Inherits="KPSCObjections.Pay" EnableViewState="false" %>
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="Pay.aspx.cs" Inherits="KPSCObjections.Pay" EnableViewState="false" %>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Redirecting to SBI ePay</title>
+    <script src="<%: ResolveUrl("~/Scripts/no-context-menu.js") %>"></script>
 </head>
 <body onload="document.getElementById('sbiForm').submit();">
     <p style="font-family: sans-serif; text-align: center; margin-top: 80px;">

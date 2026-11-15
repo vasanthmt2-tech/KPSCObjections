@@ -70,6 +70,12 @@
     }
 
 /* Required Star */
+/* Status message under the OTP buttons: same size as the labels and inputs */
+.login-panel .login-message {
+    font-size: 12px;
+    line-height: 1.5;
+}
+
 .required {
     color: red;
 }

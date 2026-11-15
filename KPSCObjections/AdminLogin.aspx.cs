@@ -20,6 +20,15 @@ namespace KPSCObjections
             string userName = txtEmpId.Text.Trim();
             string password = txtEmpPwd.Text;
 
+            // Per-IP limit on admin login attempts. The per-account lockout does not
+            // stop one wrong password tried against many accounts; this does.
+            // Checked before the captcha is used up.
+            if (!RequestThrottle.AllowLoginAttempt(Context, "admin login", "AdminLoginPerIpPerMinute", 10))
+            {
+                Alert(RequestThrottle.TooManyAttemptsMessage);
+                return;
+            }
+
             // The captcha is single use: whatever happens next, a new one is shown.
             bool captchaOk = Captcha.Consume(new HttpSessionStateWrapper(Session), txtCaptcha.Text);
             RefreshCaptcha();

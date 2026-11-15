@@ -76,6 +76,39 @@ namespace KPSCObjections.Security
             return IPAddress.TryParse(last, out parsed) ? parsed.ToString() : peer;
         }
 
+        /// <summary>
+        /// Per-IP limit for a login action (Get OTP, OTP login, admin login).
+        /// Returns false when the client IP has used up <paramref name="settingKey"/>
+        /// attempts in the current minute; the response status is then set to
+        /// 429 with Retry-After, and the first refusal of the minute is logged.
+        /// The caller shows its own message and stops.
+        /// </summary>
+        public static bool AllowLoginAttempt(HttpContext context, string action, string settingKey, int fallback)
+        {
+            string ip = ClientIp(context);
+            int limit = Setting(settingKey, fallback);
+            bool firstRejection;
+
+            if (Allow("login-" + action, ip, limit, TimeSpan.FromMinutes(1), out firstRejection))
+                return true;
+
+            if (firstRejection)
+            {
+                AppLog.Write("WARN", "Too many " + action + " attempts (over " + limit +
+                             " a minute) from " + ip + "; further attempts refused for the rest of the minute.");
+            }
+
+            context.Response.StatusCode = 429;
+            context.Response.TrySkipIisCustomErrors = true;
+            context.Response.AppendHeader("Retry-After", "60");
+
+            return false;
+        }
+
+        /// <summary>Message shown when <see cref="AllowLoginAttempt"/> refuses.</summary>
+        public const string TooManyAttemptsMessage =
+            "Too many attempts from your network. Please wait a minute and try again.";
+
         public static int Setting(string key, int fallback)
         {
             int value;

@@ -31,6 +31,7 @@
         a { color: #0d6efd; }
         .ref { font-size: 14px; color: #666; }
     </style>
+    <script src="<%: ResolveUrl("~/Scripts/no-context-menu.js") %>"></script>
 </head>
 <body>
     <div class="box">
