@@ -238,6 +238,7 @@
     <Content Include="MyObjections.aspx" />
     <Content Include="Objection.aspx" />
     <Content Include="PaymentResponse.aspx" />
+    <Content Include="Scripts\form-encrypt.js" />
     <Content Include="Scripts\login-otp.js" />
     <Content Include="Scripts\no-context-menu.js" />
     <Content Include="Scripts\postback-csp.js" />
@@ -361,6 +362,7 @@
     <Compile Include="Security\AuthSession.cs" />
     <Compile Include="Security\AppLog.cs" />
     <Compile Include="Security\DocumentReferences.cs" />
+    <Compile Include="Security\EncryptedForms.cs" />
     <Compile Include="Security\HttpsPolicy.cs" />
     <Compile Include="Security\RequestThrottle.cs" />
     <Compile Include="Security\SecurityHeaders.cs" />

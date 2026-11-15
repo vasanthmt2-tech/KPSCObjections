@@ -29,6 +29,9 @@ namespace KPSCObjections
             // here, before any PDF is processed.
             PdfSharp.Fonts.GlobalFontSettings.UseWindowsFontsUnderWindows = true;
 
+            // Key pair for encrypting form submissions in the browser.
+            EncryptedForms.Initialize();
+
             // Re-check payments still awaiting verification every few minutes.
             KPSCObjections.Payments.PendingPaymentChecker.Start();
 
@@ -45,6 +48,11 @@ namespace KPSCObjections
         void Application_BeginRequest(object sender, EventArgs e)
         {
             if (HttpsPolicy.OnBeginRequest(Context))
+                return;
+
+            // Form posts arrive encrypted; decrypt them before ASP.NET reads the
+            // body, and refuse plain posts (except SBI ePay's callbacks).
+            if (EncryptedForms.OnBeginRequest(Context))
                 return;
 
             KeepPostsToAspxPages();
@@ -244,6 +252,9 @@ namespace KPSCObjections
         {
             for (Exception e = ex; e != null; e = e.InnerException)
             {
+                if (e is EncryptedRequestException)
+                    return "encrypted form: " + e.Message;
+
                 if (e is ViewStateException)
                     return "ViewState";
 

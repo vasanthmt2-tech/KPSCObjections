@@ -18,6 +18,9 @@
         <script src="<%: ResolveUrl("~/Scripts/postback-csp.js") %>"></script>
         <%-- No right-click menu (except in text boxes). --%>
         <script src="<%: ResolveUrl("~/Scripts/no-context-menu.js") %>"></script>
+        <%-- Form submissions are encrypted in the browser (Security/EncryptedForms.cs). --%>
+        <meta name="kpsc-enc-key" content="<%: KPSCObjections.Security.EncryptedForms.PublicKey %>" />
+        <script src="<%: ResolveUrl("~/Scripts/form-encrypt.js") %>"></script>
     </asp:PlaceHolder>
 
     <webopt:bundlereference runat="server" path="~/Content/css" />
