@@ -291,7 +291,7 @@ namespace KPSCObjections
         private void RefreshCaptcha()
         {
             txtCaptcha.Text = "";
-            imgCaptcha.ImageUrl = "~/Captcha.aspx?refresh=" + Guid.NewGuid().ToString("N");
+            imgCaptcha.ImageUrl = "~/Captcha?refresh=" + Guid.NewGuid().ToString("N");
         }
 
         // ---------------------------------------------------------------

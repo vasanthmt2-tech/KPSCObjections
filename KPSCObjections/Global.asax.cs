@@ -25,7 +25,11 @@ namespace KPSCObjections
 
         void Application_BeginRequest(object sender, EventArgs e)
         {
-            HttpsPolicy.OnBeginRequest(Context);
+            if (HttpsPolicy.OnBeginRequest(Context))
+                return;
+
+            // Before session state is acquired, so a flood creates no sessions.
+            Captcha.RejectIfFlooding(Context);
         }
 
         void Application_EndRequest(object sender, EventArgs e)
