@@ -10,7 +10,9 @@ namespace KPSCObjections
 {
     /// <summary>
     /// Streams a supporting PDF to the signed-in candidate who uploaded it.
-    /// The registration number comes from the session, never from the URL.
+    /// The URL carries only a random per-session token (DocumentReferences),
+    /// never the paper or question, and the registration number always comes
+    /// from the session.
     /// </summary>
     public class ObjectionDocument : IHttpHandler, IReadOnlySessionState
     {
@@ -27,15 +29,23 @@ namespace KPSCObjections
             ObjectionSession.LoginDetails candidate =
                 (ObjectionSession.LoginDetails)context.Session[AuthSession.CandidateKey];
 
-            string paper = context.Request.QueryString["paper"] ?? "";
-            int questionNo;
+            // Only a token this session was given resolves to a document. Anything
+            // else (an edited or guessed token, one from another session, or the
+            // old paper/q parameters) is a 404 and is logged.
+            DocumentReferences.Target target =
+                DocumentReferences.Resolve(context.Session, context.Request.QueryString["d"]);
 
-            if (paper.Length == 0 || paper.Length > 2 ||
-                !int.TryParse(context.Request.QueryString["q"], out questionNo))
+            if (target == null)
             {
+                AppLog.Write("WARN", "Document request with an unknown reference by " + candidate.RegNo +
+                             " from " + RequestThrottle.ClientIp(context) + ": " +
+                             (context.Request.Url.Query.Length > 120 ? context.Request.Url.Query.Substring(0, 120) + "..." : context.Request.Url.Query));
                 context.Response.StatusCode = 404;
                 return;
             }
+
+            string paper = target.PaperCode;
+            int questionNo = target.QuestionNo;
 
             DataTable dt = new SqlHelper().ExecuteDataTable(
                 "SELECT FileName, ObjectionDocs FROM dbo.ObjectionsDocument " +

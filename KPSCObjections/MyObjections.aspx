@@ -46,7 +46,7 @@
                                             Target="_blank"
                                             Visible='<%# !(Eval("SupportingDocument") is DBNull) %>'
                                             Text='<%#: Eval("SupportingDocument") %>'
-                                            NavigateUrl='<%# "~/ObjectionDocument.ashx?paper=" + HttpUtility.UrlEncode(Convert.ToString(Eval("PaperCode"))) + "&q=" + Eval("QuestionNo") %>'>
+                                            NavigateUrl='<%# KPSCObjections.Security.DocumentReferences.Url(Session, Eval("PaperCode"), Eval("QuestionNo")) %>'>
                                         </asp:HyperLink>
                                     </ItemTemplate>
                                 </asp:TemplateField>
