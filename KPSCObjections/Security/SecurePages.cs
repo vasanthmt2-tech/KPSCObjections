@@ -41,6 +41,7 @@ namespace KPSCObjections.Security
         {
             if (!AuthSession.IsAdmin(Context))
             {
+                AuthSession.SignOut(Context);
                 Response.Redirect("~/AdminLogin.aspx", true);
             }
 

@@ -23,6 +23,16 @@ namespace KPSCObjections
             Trace.Listeners.Add(new AppLogTraceListener());
         }
 
+        void Application_BeginRequest(object sender, EventArgs e)
+        {
+            HttpsPolicy.OnBeginRequest(Context);
+        }
+
+        void Application_EndRequest(object sender, EventArgs e)
+        {
+            HttpsPolicy.OnEndRequest(Context);
+        }
+
         /// <summary>
         /// Logs every unhandled error. The error is left in place so that
         /// customErrors in Web.config decides what the visitor sees.
