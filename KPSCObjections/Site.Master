@@ -70,7 +70,8 @@
 
             </div>
 
-            <%-- Navigation --%>
+            <%-- Navigation: shown only to a signed-in candidate (Site.Master.cs) --%>
+            <asp:Panel ID="pnlNavigation" runat="server" Visible="false">
             <div class="navigation">
 
                 <div class="nav-links">
@@ -118,6 +119,7 @@
                 </div>
 
             </div>
+            </asp:Panel>
 
             <%-- Notice --%>
             <%--<div class="notice-bar">

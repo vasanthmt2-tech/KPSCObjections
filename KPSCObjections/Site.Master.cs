@@ -11,6 +11,11 @@ namespace KPSCObjections
     {
         protected void Page_Load(object sender, EventArgs e)
         {
+            // The menu, the candidate's name and Logout appear only after sign-in.
+            // Set on every request (postbacks too), and before button events run,
+            // so Logout still works for a signed-in candidate.
+            pnlNavigation.Visible = KPSCObjections.Security.AuthSession.IsCandidate(Context);
+
             if (!IsPostBack)
             {
                 lblCandidateName.Text =

@@ -15,6 +15,11 @@ namespace KPSCObjections
     {
 
         /// <summary>
+        /// pnlNavigation control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Panel pnlNavigation;
+
+        /// <summary>
         /// HeadContent control.
         /// </summary>
         /// <remarks>
