@@ -150,6 +150,15 @@ namespace KPSCObjections
         protected global::System.Web.UI.WebControls.GridView gvObjections;
 
         /// <summary>
+        /// lblPayAmount control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblPayAmount;
+
+        /// <summary>
         /// btnPayNow control.
         /// </summary>
         /// <remarks>

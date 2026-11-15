@@ -280,7 +280,10 @@
                     </div>
                     <div class="field-group">
                         <div class="add-button-section">
-                            <asp:Button ID="btnPayNow" runat="server" Visible="false" Text ="Pay Now" CssClass="btn btn-primary add-button" OnClick="btnPayNow_Click" />
+                            <%-- Amount for the unpaid (newly added) objections only; objections in a
+                                 payment being verified are not counted. Set in RefreshState. --%>
+                            <asp:Label ID="lblPayAmount" runat="server" Visible="false" CssClass="pay-amount" />
+                            <asp:Button ID="btnPayNow" runat="server" Visible="false" Text="Pay Now" CssClass="btn btn-primary add-button" OnClick="btnPayNow_Click" />
                         </div>
                     </div>
                 </div>

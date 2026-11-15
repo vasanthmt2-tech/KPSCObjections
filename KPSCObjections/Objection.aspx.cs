@@ -105,10 +105,14 @@ namespace KPSCObjections
             // keep their own objections (migration 003).
             btnPayNow.Visible = window.IsOpen && draftCount > 0;
 
-            if (btnPayNow.Visible)
+            // The amount is shown beside the button, for the unpaid objections only.
+            lblPayAmount.Visible = btnPayNow.Visible;
+
+            if (lblPayAmount.Visible)
             {
-                btnPayNow.Text = "Pay Now (Rs. " +
-                    SbiEpay.FormatAmount(draftCount * ObjectionRules.Fee) + ")";
+                lblPayAmount.Text = HttpUtility.HtmlEncode(
+                    "Amount payable for " + draftCount + " new objection" + (draftCount == 1 ? "" : "s") +
+                    ": Rs. " + SbiEpay.FormatAmount(draftCount * ObjectionRules.Fee));
             }
         }
 

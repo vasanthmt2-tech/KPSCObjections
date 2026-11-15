@@ -71,7 +71,16 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
     padding-left: 0;
+}
+
+/* Amount for the unpaid objections, shown beside Pay Now */
+.pay-amount {
+    font-size: 15px;
+    font-weight: bold;
+    color: #1b2a49;
 }
 
 .add-button {
