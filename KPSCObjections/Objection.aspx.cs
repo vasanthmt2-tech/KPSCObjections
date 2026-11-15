@@ -60,16 +60,23 @@ namespace KPSCObjections
         // Page state
         // ---------------------------------------------------------------
 
-        /// <summary>Shows the drafts and enables only what is allowed right now.</summary>
+        /// <summary>
+        /// Shows the objections and enables only what is allowed right now:
+        ///  - while the window is open, new objections can always be added and
+        ///    unpaid drafts deleted, even while a payment is being verified;
+        ///  - the objections in a payment being verified cannot be changed;
+        ///  - Pay Now (for the drafts) waits until no payment is being verified,
+        ///    as only one payment at a time is allowed per candidate.
+        /// </summary>
         private void RefreshState()
         {
             ObjectionWindow window = ObjectionRules.GetWindow(ssen.ExamCode);
             PaymentInfo pending = PaymentService.FindPending(ssen.RegNo);
-            DataTable drafts = LoadDrafts();
+            DataTable rows = LoadDrafts();
 
-            bool editable = window.IsOpen && pending == null;
+            int draftCount = rows.AsEnumerable().Count(r => Convert.ToBoolean(r["IsDraft"]));
 
-            pnlEntry.Visible = editable;
+            pnlEntry.Visible = window.IsOpen;
 
             lblNotice.Visible = !window.IsOpen;
             lblNotice.Text = window.IsOpen ? "" : HttpUtility.HtmlEncode(window.ClosedMessage);
@@ -82,21 +89,22 @@ namespace KPSCObjections
                     "A payment of Rs. " + SbiEpay.FormatAmount(pending.Amount) +
                     " (reference " + pending.OrderNo + ") is being verified. " +
                     "If you have completed the payment, click Check Payment Status. " +
-                    "Objections cannot be changed until this is resolved.");
+                    "The objections in this payment cannot be changed. You can still add objections " +
+                    "for other questions; pay for them once this payment is resolved.");
             }
 
-            gvObjections.DataSource = drafts;
+            gvObjections.DataSource = rows;
             gvObjections.DataBind();
 
-            // Last column holds the Delete button.
-            gvObjections.Columns[gvObjections.Columns.Count - 1].Visible = editable;
+            // Last column holds the Delete button (shown on draft rows only).
+            gvObjections.Columns[gvObjections.Columns.Count - 1].Visible = window.IsOpen;
 
-            btnPayNow.Visible = editable && drafts.Rows.Count > 0;
+            btnPayNow.Visible = window.IsOpen && pending == null && draftCount > 0;
 
             if (btnPayNow.Visible)
             {
                 btnPayNow.Text = "Pay Now (Rs. " +
-                    SbiEpay.FormatAmount(drafts.Rows.Count * ObjectionRules.Fee) + ")";
+                    SbiEpay.FormatAmount(draftCount * ObjectionRules.Fee) + ")";
             }
         }
 
@@ -105,7 +113,9 @@ namespace KPSCObjections
         {
             return sh.ExecuteDataTable(
                 @"SELECT o.PaperCode AS SubjectCode, s.SubjectDescription AS SubjectDesc, o.VersionCode,
-                         o.QuestionNo, o.KeyAnswer, o.ObjectionAnswer, o.Remarks, d.FileName, @Fee AS Fee
+                         o.QuestionNo, o.KeyAnswer, o.ObjectionAnswer, o.Remarks, d.FileName, @Fee AS Fee,
+                         CAST(CASE WHEN o.PaymentId IS NULL THEN 1 ELSE 0 END AS bit) AS IsDraft,
+                         CASE WHEN o.PaymentId IS NULL THEN 'Not paid' ELSE 'Payment being verified' END AS PayStatus
                   FROM dbo.Objections o
                   LEFT JOIN dbo.ObjectionsDocument d
                          ON d.Regno = o.Regno AND d.PaperCode = o.PaperCode AND d.QuestionNo = o.QuestionNo
@@ -121,8 +131,10 @@ namespace KPSCObjections
         }
 
         /// <summary>
-        /// True when objections may be added, deleted or paid for. Re-checked on
-        /// every action because the page may have been open for a while.
+        /// True when objections may be added or drafts deleted: only the window
+        /// matters, so this is allowed while a payment is being verified (that
+        /// payment's objections are protected separately). Re-checked on every
+        /// action because the page may have been open for a while.
         /// </summary>
         private bool CanEdit()
         {
@@ -133,9 +145,18 @@ namespace KPSCObjections
                 return false;
             }
 
+            return true;
+        }
+
+        /// <summary>True when the drafts may be paid for: window open and no payment being verified.</summary>
+        private bool CanPay()
+        {
+            if (!CanEdit())
+                return false;
+
             if (PaymentService.FindPending(ssen.RegNo) != null)
             {
-                Alert("A payment is being verified. Objections cannot be changed until it is resolved.");
+                Alert("A payment is being verified. You can pay for your new objections once it is resolved.");
                 RefreshState();
                 return false;
             }
@@ -464,7 +485,7 @@ namespace KPSCObjections
 
         protected void btnPayNow_Click(object sender, EventArgs e)
         {
-            if (!CanEdit())
+            if (!CanPay())
                 return;
 
             string orderNo;

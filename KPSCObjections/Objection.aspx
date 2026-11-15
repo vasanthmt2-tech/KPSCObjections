@@ -258,9 +258,15 @@
                                 <asp:BoundField DataField="Fee"
                                     HeaderText="Fee(Rs.)" />
 
+                                <asp:BoundField DataField="PayStatus"
+                                    HeaderText="Status" />
+
                                 <asp:TemplateField HeaderText="Action">
                                     <ItemTemplate>
+                                        <%-- Only unpaid drafts can be deleted; objections in a payment
+                                             being verified have no Delete button. --%>
                                         <asp:LinkButton ID="lnkDelete" runat="server"
+                                            Visible='<%# Convert.ToBoolean(Eval("IsDraft")) %>'
                                             CommandName="Delete"
                                             Text="Delete"
                                             CssClass="btn btn-danger btn-sm"
