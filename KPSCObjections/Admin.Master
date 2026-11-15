@@ -94,6 +94,10 @@
                 OBJECTIONS
             </a>
 
+            <a href="~/CandidateObjections.aspx" runat="server">
+                CANDIDATE OBJECTIONS
+            </a>
+
            <%-- <a href="~/Payments.aspx" runat="server">
                 PAYMENTS
             </a>--%>

@@ -252,6 +252,7 @@
     <Content Include="NotFound.aspx" />
     <Content Include="PaymentPush.ashx" />
     <Content Include="ObjectionDocument.ashx" />
+    <Content Include="CandidateObjections.aspx" />
     <Content Include="UploadCandidates.aspx" />
     <Content Include="UploadKeyAnswer.aspx" />
     <Content Include="Web.config" />
@@ -358,6 +359,13 @@
     </Compile>
     <Compile Include="Site.Master.designer.cs">
       <DependentUpon>Site.Master</DependentUpon>
+    </Compile>
+    <Compile Include="CandidateObjections.aspx.cs">
+      <DependentUpon>CandidateObjections.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="CandidateObjections.aspx.designer.cs">
+      <DependentUpon>CandidateObjections.aspx</DependentUpon>
     </Compile>
     <Compile Include="UploadCandidates.aspx.cs">
       <DependentUpon>UploadCandidates.aspx</DependentUpon>
