@@ -9,10 +9,10 @@ IF COL_LENGTH('dbo.Exam', 'ObjectionStart') IS NULL
     ALTER TABLE dbo.Exam ADD ObjectionStart datetime2(0) NULL, ObjectionEnd datetime2(0) NULL;
 GO
 
--- Window for examination 1: 16-Nov-2026 3:00 PM to 18-Nov-2026 11:59 PM.
+-- Window for examination 1: 14-Nov-2026 3:00 PM to 18-Nov-2026 11:59 PM.
 -- A NULL start or end means "no limit" on that side.
 UPDATE dbo.Exam
-SET ObjectionStart = '2026-11-16T15:00:00',
+SET ObjectionStart = '2026-11-14T15:00:00',
     ObjectionEnd   = '2026-11-18T23:59:59'
 WHERE ExamCode = '1' AND ObjectionStart IS NULL AND ObjectionEnd IS NULL;
 GO
