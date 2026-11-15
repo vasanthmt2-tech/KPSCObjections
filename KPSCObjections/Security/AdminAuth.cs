@@ -41,14 +41,16 @@ namespace KPSCObjections.Security
 
             DataRow row = dt.Rows[0];
 
-            if (Convert.ToInt32(row["IsLocked"]) == 1)
-                return Result.LockedOut;
-
             byte[] expected = (byte[])row["PasswordHash"];
             byte[] actual = PasswordHasher.Hash(
                 password,
                 (byte[])row["PasswordSalt"],
                 Convert.ToInt32(row["Iterations"]));
+
+            // Checked after hashing, so a locked account takes as long to answer
+            // as any other attempt and response time does not reveal the lock.
+            if (Convert.ToInt32(row["IsLocked"]) == 1)
+                return Result.LockedOut;
 
             if (!PasswordHasher.FixedTimeEquals(expected, actual))
             {

@@ -23,7 +23,7 @@ namespace KPSCObjections
     {
         private const string SessionKey = "CaptchaCode";
 
-        private const int Width = 140;
+        private const int Width = 180;
         private const int Height = 40;
 
         private static readonly SemaphoreSlim Renderers =
@@ -118,10 +118,26 @@ namespace KPSCObjections
                     }
                 }
 
-                using (Font font = new Font("Georgia", 20, FontStyle.Bold))
                 using (Brush brush = new SolidBrush(Color.DarkBlue))
                 {
-                    graphics.DrawString(captchaText, font, brush, 8, 5);
+                    // Wide letters (W, M, H) can make the code wider than the image;
+                    // shrink the font until all six characters fit.
+                    float size = 20;
+                    Font font = new Font("Georgia", size, FontStyle.Bold);
+
+                    while (size > 12 && graphics.MeasureString(captchaText, font).Width > Width - 12)
+                    {
+                        font.Dispose();
+                        size -= 1;
+                        font = new Font("Georgia", size, FontStyle.Bold);
+                    }
+
+                    using (font)
+                    {
+                        SizeF text = graphics.MeasureString(captchaText, font);
+                        graphics.DrawString(captchaText, font, brush,
+                            (Width - text.Width) / 2, (Height - text.Height) / 2);
+                    }
                 }
 
                 // Noise dots

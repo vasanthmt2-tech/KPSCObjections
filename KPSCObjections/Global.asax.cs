@@ -22,6 +22,15 @@ namespace KPSCObjections
 
             // Trace.TraceError(...) anywhere in the app ends up in App_Data\logs.
             Trace.Listeners.Add(new AppLogTraceListener());
+
+            // OTPs and the gateway credentials must not cross the network unencrypted.
+            string smsUrl = System.Configuration.ConfigurationManager.AppSettings["SMSUrl"] ?? "";
+
+            if (HttpsPolicy.Required && !smsUrl.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+            {
+                AppLog.Write("WARN", "SMSUrl is not https: OTP messages and SMS gateway credentials are " +
+                             "sent unencrypted. Use the gateway's https address (" + smsUrl + ").");
+            }
         }
 
         void Application_BeginRequest(object sender, EventArgs e)
@@ -61,6 +70,18 @@ namespace KPSCObjections
             Context.RewritePath(extensionless, Request.PathInfo, Request.Url.Query.TrimStart('?'));
         }
 
+        /// <summary>Pages are never stored by browsers or proxies (see SecurityHeaders).</summary>
+        void Application_PostRequestHandlerExecute(object sender, EventArgs e)
+        {
+            SecurityHeaders.ApplyCachePolicy(Context);
+        }
+
+        /// <summary>Finishes a sign-in in the new session (see AuthSession).</summary>
+        void Application_PostAcquireRequestState(object sender, EventArgs e)
+        {
+            AuthSession.CompletePendingSignIn(Context);
+        }
+
         /// <summary>
         /// Drops the Server header (e.g. "Microsoft-IIS/10.0") from every
         /// response, including static files and error pages, so the server
@@ -71,7 +92,10 @@ namespace KPSCObjections
             HttpContext context = HttpContext.Current;
 
             if (context != null)
+            {
                 context.Response.Headers.Remove("Server");
+                SecurityHeaders.Apply(context);
+            }
         }
 
         void Application_EndRequest(object sender, EventArgs e)

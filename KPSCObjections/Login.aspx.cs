@@ -101,23 +101,34 @@ namespace KPSCObjections
                 return;
             }
 
+            // From here on every outcome shows the same message, so the page does
+            // not reveal which registration numbers exist (user enumeration).
+            // The OTP step is tied to what was entered either way; for details
+            // that do not match, no OTP exists and the login step fails exactly
+            // like a wrong OTP.
+            Session[OtpRegNoKey] = regNo;
+            Session[OtpExamKey] = examCode;
+            txtOTP.Text = "";
+
             string mobile = GetRegisteredMobile(regNo, examCode);
 
             if (mobile == null)
             {
-                ShowError("Registration Number and Examination do not match our records.");
+                ShowSuccess(OtpRequestedMessage);
                 return;
             }
 
             if (!MobilePattern.IsMatch(mobile))
             {
-                ShowError("No valid mobile number is registered for this candidate. Please contact KPSC.");
+                AppLog.Write("WARN", "OTP not sent: no valid mobile number registered for " + regNo);
+                ShowSuccess(OtpRequestedMessage);
                 return;
             }
 
             if (SecondsSinceLastSend(regNo) < ResendWaitSeconds)
             {
-                ShowError("Please wait " + ResendWaitSeconds + " seconds before requesting another OTP.");
+                // The OTP sent less than a minute ago is still valid.
+                ShowSuccess(OtpRequestedMessage);
                 return;
             }
 
@@ -136,15 +147,14 @@ namespace KPSCObjections
                 return;
             }
 
-            Session[OtpRegNoKey] = regNo;
-            Session[OtpExamKey] = examCode;
-
-            txtOTP.Text = "";
-
-            ShowSuccess(
-                "OTP has been sent to your registered mobile number ending with " +
-                mobile.Substring(mobile.Length - 4) + ".");
+            ShowSuccess(OtpRequestedMessage);
         }
+
+        /// <summary>Shown for every OTP request, whether or not the details matched.</summary>
+        private static readonly string OtpRequestedMessage =
+            "If the Registration Number and Examination are correct, an OTP has been sent to the " +
+            "registered mobile number. It is valid for 5 minutes. If it does not arrive, check the " +
+            "details and request again after " + ResendWaitSeconds + " seconds.";
 
         // ---------------------------------------------------------------
         // Step 2: verify the OTP and sign in
@@ -169,30 +179,14 @@ namespace KPSCObjections
                 return;
             }
 
-            switch (CheckOtp(regNo, enteredOTP))
+            // One message for every failure: telling "wrong" from "not found" or
+            // "expired" would reveal which registration numbers have an OTP and so
+            // exist. The reason is still enforced (5 attempts, 5 minutes, single use).
+            if (CheckOtp(regNo, enteredOTP) != OtpCheck.Ok)
             {
-                case OtpCheck.Ok:
-                    break;
-
-                case OtpCheck.Wrong:
-                    ShowError("Invalid OTP. Please try again.");
-                    return;
-
-                case OtpCheck.Expired:
-                    ShowError("OTP expired. Please request a new OTP.");
-                    return;
-
-                case OtpCheck.TooManyAttempts:
-                    ShowError("Maximum OTP attempts exceeded. Please request a new OTP.");
-                    return;
-
-                case OtpCheck.Used:
-                    ShowError("This OTP has already been used. Please request a new OTP.");
-                    return;
-
-                default:
-                    ShowError("OTP not found. Please request a new OTP.");
-                    return;
+                ShowError("Invalid or expired OTP. Please try again, or request a new OTP " +
+                          "(an OTP is valid for 5 minutes and allows 5 attempts).");
+                return;
             }
 
             DataTable dt = sh.ExecuteDataTable(

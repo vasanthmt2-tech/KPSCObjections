@@ -11,9 +11,9 @@
 
             <div class="login-body">
 
-                <!-- Step 1: identify the candidate and request an OTP -->
+                <%-- Step 1: identify the candidate and request an OTP --%>
 
-                <!-- Registration Number -->
+                <%-- Registration Number --%>
                 <div class="field-group">
                     <label class="form-label"
                         for="<%= txtRegisterNumber.ClientID %>">
@@ -27,7 +27,7 @@
                         CssClass="form-control" />
                 </div>
 
-                <!-- Examination -->
+                <%-- Examination --%>
                 <div class="field-group">
                     <label class="form-label"
                         for="<%= ddlExamination.ClientID %>">
@@ -40,7 +40,7 @@
                     </asp:DropDownList>
                 </div>
 
-                <!-- Captcha: required to send an OTP -->
+                <%-- Captcha: required to send an OTP --%>
                 <div class="captcha-section">
 
                     <label class="form-label"
@@ -72,7 +72,7 @@
                     </div>
                 </div>
 
-                <!-- Get OTP and Resend OTP Buttons -->
+                <%-- Get OTP and Resend OTP Buttons --%>
                 <div class="otp-button-row">
 
                     <asp:Button ID="btnGetOTP"
@@ -90,13 +90,13 @@
 
                 </div>
 
-                <!-- Status Message -->
+                <%-- Status Message --%>
                 <asp:Label ID="lblMessage"
                     runat="server"
                     CssClass="text-danger mt-3 d-block">
                 </asp:Label>
 
-                <!-- Step 2: enter the OTP and log in -->
+                <%-- Step 2: enter the OTP and log in --%>
                 <asp:Panel ID="pnlOTP" runat="server" Visible="true">
 
                     <div class="otp-row">
@@ -120,7 +120,7 @@
 
                 </asp:Panel>
 
-                <!-- Login Button -->
+                <%-- Login Button --%>
                 <div class="login-button-section">
                     <asp:Button ID="btnLogin"
                         runat="server"

@@ -82,17 +82,17 @@
             });
 
         </script>
-            <!-- Section header -->
+            <%-- Section header --%>
             <div class="panel-heading">
                 OBJECTION DETAILS
             </div>
 
             <div class="candidate-body">
-                <!-- Shown when the objection window is not open -->
+                <%-- Shown when the objection window is not open --%>
                 <asp:Label ID="lblNotice" runat="server" Visible="false"
                     CssClass="alert alert-warning d-block" />
 
-                <!-- Shown while a payment is being verified -->
+                <%-- Shown while a payment is being verified --%>
                 <asp:Panel ID="pnlPending" runat="server" Visible="false"
                     CssClass="alert alert-info">
                     <asp:Label ID="lblPending" runat="server" />
@@ -106,11 +106,11 @@
                 </asp:Panel>
 
                 <div class="row">
-                  <!-- Entry form: hidden when objections cannot be changed -->
+                  <%-- Entry form: hidden when objections cannot be changed --%>
                   <asp:Panel ID="pnlEntry" runat="server" CssClass="row">
-                    <!-- LEFT COLUMN -->
+                    <%-- LEFT COLUMN --%>
                     <div class="col-md-6">
-                        <!-- Subject Code -->
+                        <%-- Subject Code --%>
                         <div class="field-group">
                             <label class="form-label" for="<%= ddlSubjectCode.ClientID %>">Subject Code <span class="required">*</span></label>
                             <asp:DropDownList ID="ddlSubjectCode" runat="server" CssClass="form-select" OnSelectedIndexChanged="ddlSubjectCode_SelectedIndexChanged" AutoPostBack="true">
@@ -120,7 +120,7 @@
                             </asp:DropDownList>
                         </div>
                        
-                        <!-- Question Number -->
+                        <%-- Question Number --%>
                         <div class="field-group">
                             <label class="form-label" for="<%= ddlQuestionNumber.ClientID %>">Question Number <span class="required">*</span></label>
 
@@ -130,7 +130,7 @@
                                 <asp:ListItem Text="572" Value="572" />--%>
                             </asp:DropDownList>
                         </div>
-                        <!-- Categories -->
+                        <%-- Categories --%>
                         <div class="field-group">
                             <label class="form-label" for="<%= ddlCategory.ClientID %>">Category<span class="required">*</span></label>
 
@@ -141,7 +141,7 @@
                             </asp:DropDownList>
                         </div>
                         
-                        <!-- Objection Remarks -->
+                        <%-- Objection Remarks --%>
                         <div class="field-group">
                             <label class="form-label" for="<%= txtRemarks.ClientID %>">
                                 Remarks <span class="required">*</span>
@@ -156,10 +156,10 @@
                         </div>
                     </div>
 
-                    <!-- RIGHT COLUMN -->
+                    <%-- RIGHT COLUMN --%>
                     <div class="col-md-6">
                         
-                         <!-- Version Code -->
+                         <%-- Version Code --%>
                         <div class="field-group">
                             <label class="form-label" for="<%= ddlVersionCode.ClientID %>"> Version Code <span class="required">*</span></label>
 
@@ -170,13 +170,13 @@
                             </asp:DropDownList>
                         </div>
 
-                        <!-- Candidate Name -->
+                        <%-- Candidate Name --%>
                         <div class="field-group">
                             <label class="form-label" for="<%= txtKeyAnswer.ClientID %>">Key Answer <span class="required">*</span></label>
 
                             <asp:TextBox ID="txtKeyAnswer" runat="server" CssClass="form-control" ReadOnly="true" Text="" />
                         </div>
-                        <!-- Objection Answer -->
+                        <%-- Objection Answer --%>
                         <div class="field-group">
                             <label class="form-label" for="<%= cblObjectionAnswer.ClientID %>">Objection Answer<span class="required">*</span></label>
                             <asp:CheckBoxList ID="cblObjectionAnswer" runat="server"
@@ -191,7 +191,7 @@
                                 <asp:ListItem Text="Grace" Value="5" />
                             </asp:CheckBoxList>
                         </div>
-                        <!-- File Upload -->
+                        <%-- File Upload --%>
                         <div class="field-group">
                             <label class="form-label" for="<%= fileDocs.ClientID %>">Supporting Document <span class="text-muted">(optional; pdf only, less than 1 MB)</span></label>
                             <asp:FileUpload ID="fileDocs" runat="server" CssClass="form-select">
@@ -210,7 +210,7 @@
                     </div>
                   </asp:Panel>
 
-                    <!-- Objection Details Grid -->
+                    <%-- Objection Details Grid --%>
                     <div class="table-responsive mt-4">
                         <asp:GridView ID="gvObjections" runat="server"
                             AutoGenerateColumns="False"

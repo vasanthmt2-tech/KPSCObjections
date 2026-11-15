@@ -51,24 +51,114 @@ namespace KPSCObjections.Security
         private static readonly ConcurrentDictionary<string, string> ActiveTokens =
             new ConcurrentDictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
-        public static void SignInCandidate(HttpContext context, ObjectionSession.LoginDetails details)
+        // ---------------------------------------------------------------
+        // Sign-in with a new session ID
+        //
+        // ASP.NET cannot change a session's ID during a request, so a sign-in
+        // takes two steps:
+        //  1. SignIn*: the pre-login session is ended and its cookie removed,
+        //     and the sign-in is parked on the server under a random one-time
+        //     ticket (cookie, 2 minutes, bound to the browser).
+        //  2. On the next request (the redirect that follows every sign-in)
+        //     ASP.NET issues a brand-new session ID, and CompletePendingSignIn
+        //     moves the sign-in into that new session.
+        // So the session ID before login never becomes a signed-in session.
+        // ---------------------------------------------------------------
+
+        private const string TicketCookie = "KPSCObj_SignIn";
+        private const int TicketSeconds = 120;
+
+        private sealed class PendingSignIn
         {
-            context.Session.Clear();
-
-            context.Session[CandidateKey] = details;
-            context.Session["CandidateName"] = details.Name;
-            context.Session["RegNoDesc"] = "Reg. No." + details.RegNo;
-            context.Session["RegNo"] = details.RegNo;
-
-            IssueToken(context, CandidateUserKey(details.RegNo));
+            public ObjectionSession.LoginDetails? Candidate;
+            public string Admin;
+            public string Agent;
         }
 
+        /// <summary>Signs a candidate in. The caller must redirect afterwards.</summary>
+        public static void SignInCandidate(HttpContext context, ObjectionSession.LoginDetails details)
+        {
+            BeginSignIn(context, new PendingSignIn { Candidate = details });
+        }
+
+        /// <summary>Signs an admin in. The caller must redirect afterwards.</summary>
         public static void SignInAdmin(HttpContext context, string userName)
         {
-            context.Session.Clear();
-            context.Session[AdminKey] = userName;
+            BeginSignIn(context, new PendingSignIn { Admin = userName });
+        }
 
-            IssueToken(context, AdminUserKey(userName));
+        private static void BeginSignIn(HttpContext context, PendingSignIn pending)
+        {
+            pending.Agent = AgentHash(context);
+
+            string ticket = NewRandomToken();
+
+            HttpRuntime.Cache.Insert(
+                "signin:" + ticket, pending, null,
+                DateTime.UtcNow.AddSeconds(TicketSeconds),
+                System.Web.Caching.Cache.NoSlidingExpiration);
+
+            // End the pre-login session and drop its ID and any earlier sign-in's
+            // token from the browser.
+            context.Session.Clear();
+            context.Session.Abandon();
+            ExpireCookie(context, SessionCookie);
+            ExpireCookie(context, TokenCookie);
+
+            context.Response.Cookies.Set(new HttpCookie(TicketCookie, ticket)
+            {
+                HttpOnly = true,
+                Secure = HttpsPolicy.CookiesMustBeSecure(context),
+                SameSite = SameSiteMode.Lax,
+                Path = "/",
+                Expires = DateTime.UtcNow.AddSeconds(TicketSeconds)
+            });
+        }
+
+        /// <summary>
+        /// Call from Application_PostAcquireRequestState. Finishes a sign-in
+        /// started on the previous request, in the new session.
+        /// </summary>
+        public static void CompletePendingSignIn(HttpContext context)
+        {
+            HttpCookie cookie = context.Request.Cookies[TicketCookie];
+
+            if (cookie == null || string.IsNullOrEmpty(cookie.Value) || context.Session == null)
+                return;
+
+            // Only the page the browser was redirected to may use the ticket: an
+            // image or handler request (the captcha, a document) that happens to
+            // run at the same moment must not take it, or the page would load
+            // without the sign-in.
+            if (!(context.Handler is System.Web.UI.Page) || context.Handler is Captcha)
+                return;
+
+            // Single use: whatever happens, the ticket is gone after this.
+            PendingSignIn pending = HttpRuntime.Cache.Remove("signin:" + cookie.Value) as PendingSignIn;
+            ExpireCookie(context, TicketCookie);
+
+            if (pending == null || !SameText(pending.Agent, AgentHash(context)))
+                return;
+
+            context.Session.Clear();
+
+            if (pending.Candidate.HasValue)
+            {
+                ObjectionSession.LoginDetails details = pending.Candidate.Value;
+
+                context.Session[CandidateKey] = details;
+                context.Session["CandidateName"] = details.Name;
+                context.Session["RegNoDesc"] = "Reg. No." + details.RegNo;
+                context.Session["RegNo"] = details.RegNo;
+
+                IssueToken(context, CandidateUserKey(details.RegNo));
+            }
+            else
+            {
+                context.Session[AdminKey] = pending.Admin;
+
+                IssueToken(context, AdminUserKey(pending.Admin));
+            }
         }
 
         public static bool IsCandidate(HttpContext context)
@@ -144,7 +234,8 @@ namespace KPSCObjections.Security
             return string.IsNullOrEmpty(admin) ? null : AdminUserKey(admin);
         }
 
-        private static void IssueToken(HttpContext context, string userKey)
+        /// <summary>32 random bytes, URL-safe base64 (fit for a cookie or cache key).</summary>
+        private static string NewRandomToken()
         {
             byte[] bytes = new byte[32];
 
@@ -153,7 +244,12 @@ namespace KPSCObjections.Security
                 rng.GetBytes(bytes);
             }
 
-            string token = Convert.ToBase64String(bytes);
+            return Convert.ToBase64String(bytes).TrimEnd('=').Replace('+', '-').Replace('/', '_');
+        }
+
+        private static void IssueToken(HttpContext context, string userKey)
+        {
+            string token = NewRandomToken();
 
             context.Session[TokenKey] = token;
             context.Session[IssuedKey] = DateTime.UtcNow;
@@ -169,6 +265,10 @@ namespace KPSCObjections.Security
                 SameSite = SameSiteMode.Lax,
                 Path = "/"
             });
+
+            // The rest of this request must check against the new token too, not
+            // a token from an earlier sign-in that the browser sent in.
+            context.Request.Cookies.Set(new HttpCookie(TokenCookie, token));
         }
 
         private static bool IsValid(HttpContext context, string userKey)

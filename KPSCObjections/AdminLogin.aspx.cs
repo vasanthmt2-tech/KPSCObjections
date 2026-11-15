@@ -50,7 +50,7 @@ namespace KPSCObjections
 
             if (userName.Length > 50 || password.Length > 200)
             {
-                Alert("Invalid username or password.");
+                Alert(FailedLoginMessage);
                 return;
             }
 
@@ -74,15 +74,17 @@ namespace KPSCObjections
                     Response.Redirect("~/UploadKeyAnswer.aspx", true);
                     break;
 
-                case AdminAuth.Result.LockedOut:
-                    Alert("Too many failed attempts. Please try again after 15 minutes.");
-                    break;
-
                 default:
-                    Alert("Invalid username or password.");
+                    // Same message for a wrong password, an unknown user and a
+                    // locked account: "locked" would confirm the user name exists.
+                    // The lockout itself still applies (AdminAuth).
+                    Alert(FailedLoginMessage);
                     break;
             }
         }
+
+        private const string FailedLoginMessage =
+            "Invalid username or password. After 5 failed attempts the account is locked for 15 minutes.";
 
         protected void btnRefreshCaptcha_Click1(object sender, EventArgs e)
         {

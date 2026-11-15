@@ -10,7 +10,7 @@
 
             <div class="candidate-body">
                 <div class="row">
-                   <!-- Objection Details Grid -->
+                   <%-- Objection Details Grid --%>
                     <div class="table-responsive mt-4">
                         <asp:GridView ID="gvObjections" runat="server"
                             AutoGenerateColumns="False"

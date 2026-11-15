@@ -35,7 +35,7 @@
             </div>
             <div class="candidate-body" id="divObjectionDetails" runat="server">
                 <div class="row">
-                        <!-- Objection Details Grid -->
+                        <%-- Objection Details Grid --%>
                     <div class="table-responsive mt-4">
                         <asp:GridView ID="gvObjections" runat="server"
                             AutoGenerateColumns="False"
@@ -85,7 +85,7 @@
         
             <div class="candidate-body" id="divObjectionSummary" runat="server" visible="false">
                 <div class="row">
-                   <!-- Objection Details Grid -->
+                   <%-- Objection Details Grid --%>
                     <div class="table-responsive mt-4">
                         <asp:GridView ID="gvObjectionSummary" runat="server"
                             AutoGenerateColumns="False"

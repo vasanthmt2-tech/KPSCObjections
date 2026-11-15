@@ -14,7 +14,7 @@
 
             <div class="login-body">
 
-                <!-- Application / Register Number -->
+                <%-- Application / Register Number --%>
                 <div class="field-group">
                     <label class="form-label"
                         for="<%= txtEmpId.ClientID %>">
@@ -23,10 +23,11 @@
 
                     <asp:TextBox ID="txtEmpId"
                         runat="server"
+                        autocomplete="off"
                         CssClass="form-control" />
                 </div>
 
-                <!-- Candidate Name -->
+                <%-- Candidate Name --%>
                 <%--<div class="field-group">
                     <label class="form-label"
                         for="<%= txtCandidateName.ClientID %>">
@@ -38,18 +39,18 @@
                         CssClass="form-control" />
                 </div>--%>
 
-                <!-- Date of Birth -->
+                <%-- Date of Birth --%>
                 <div class="field-group">
                     <label class="form-label"
                         for="<%= txtEmpPwd.ClientID %>">
                         Password
                     </label>
 
-                    <asp:TextBox ID="txtEmpPwd" runat="server" TextMode="Password" CssClass="form-control" />
+                    <asp:TextBox ID="txtEmpPwd" runat="server" TextMode="Password" CssClass="form-control" autocomplete="off" />
 
                 </div>
 
-                <!-- Examination -->
+                <%-- Examination --%>
              <%--   <div class="field-group">
                     <label class="form-label"
                         for="<%= ddlExamination.ClientID %>">
@@ -62,7 +63,7 @@
                     </asp:DropDownList>
                 </div>--%>
 
-                <!-- Captcha: checked before the password -->
+                <%-- Captcha: checked before the password --%>
                 <div class="captcha-section">
 
                     <label class="form-label"
@@ -94,7 +95,7 @@
                     </div>
                 </div>
 
-                <!-- Login Button -->
+                <%-- Login Button --%>
                 <div class="login-button-section">
                     <asp:Button ID="btnLogin"
                         runat="server"

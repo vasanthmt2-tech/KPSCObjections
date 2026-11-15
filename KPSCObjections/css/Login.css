@@ -93,8 +93,8 @@
 }
 
     .captcha-display img {
-        width: 135px;
-        height: 35px;
+        width: 180px;
+        height: 40px;
         object-fit: contain;
     }
 
