@@ -21,6 +21,8 @@ namespace KPSCObjections
     /// </summary>
     public partial class Captcha : Page
     {
+        private const string SessionKey = "CaptchaCode";
+
         private const int Width = 140;
         private const int Height = 40;
 
@@ -82,7 +84,7 @@ namespace KPSCObjections
             {
                 string captchaText = GenerateCaptchaText();
 
-                Session["CaptchaCode"] = captchaText;
+                Session[SessionKey] = captchaText;
 
                 Response.ContentType = "image/png";
                 Render(captchaText);
@@ -130,6 +132,27 @@ namespace KPSCObjections
 
                 bitmap.Save(Response.OutputStream, ImageFormat.Png);
             }
+        }
+
+        /// <summary>
+        /// Checks the code the user typed against the one last shown to this
+        /// session. The code is single use: it is removed whatever the result,
+        /// so each attempt needs a new image.
+        /// </summary>
+        public static bool Consume(HttpSessionStateBase session, string entered)
+        {
+            string expected = session[SessionKey] as string;
+
+            session.Remove(SessionKey);
+
+            return !string.IsNullOrEmpty(expected)
+                && string.Equals((entered ?? "").Trim(), expected, StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>A fresh image URL, so the browser does not reuse the old picture.</summary>
+        public static string NewImageUrl()
+        {
+            return "~/Captcha?refresh=" + Guid.NewGuid().ToString("N");
         }
 
         private static string GenerateCaptchaText()

@@ -33,6 +33,33 @@ namespace KPSCObjections
         protected global::System.Web.UI.WebControls.TextBox txtEmpPwd;
 
         /// <summary>
+        /// txtCaptcha control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtCaptcha;
+
+        /// <summary>
+        /// imgCaptcha control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Image imgCaptcha;
+
+        /// <summary>
+        /// btnRefreshCaptcha control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton btnRefreshCaptcha;
+
+        /// <summary>
         /// btnLogin control.
         /// </summary>
         /// <remarks>

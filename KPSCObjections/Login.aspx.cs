@@ -24,7 +24,6 @@ namespace KPSCObjections
     {
         private const string OtpRegNoKey = "OTPRegNo";
         private const string OtpExamKey = "OTPExamCode";
-        private const string CaptchaKey = "CaptchaCode";
 
         private const int MaxOtpAttempts = 5;
         private const int ResendWaitSeconds = 60;
@@ -278,20 +277,17 @@ namespace KPSCObjections
         /// <summary>Checks the entered captcha and always retires it.</summary>
         private bool ConsumeCaptcha()
         {
-            string entered = txtCaptcha.Text.Trim();
-            string expected = Session[CaptchaKey] as string;
+            bool ok = Captcha.Consume(new HttpSessionStateWrapper(Session), txtCaptcha.Text);
 
-            Session.Remove(CaptchaKey);
             RefreshCaptcha();
 
-            return !string.IsNullOrEmpty(expected)
-                && string.Equals(entered, expected, StringComparison.OrdinalIgnoreCase);
+            return ok;
         }
 
         private void RefreshCaptcha()
         {
             txtCaptcha.Text = "";
-            imgCaptcha.ImageUrl = "~/Captcha?refresh=" + Guid.NewGuid().ToString("N");
+            imgCaptcha.ImageUrl = Captcha.NewImageUrl();
         }
 
         // ---------------------------------------------------------------

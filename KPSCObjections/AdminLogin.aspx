@@ -62,22 +62,25 @@
                     </asp:DropDownList>
                 </div>--%>
 
-                <!-- Captcha -->
-               <%-- <div class="captcha-section">
+                <!-- Captcha: checked before the password -->
+                <div class="captcha-section">
 
-                    <label class="form-label">
-                        Enter the captcha
+                    <label class="form-label"
+                        for="<%= txtCaptcha.ClientID %>">
+                        Enter the captcha<span class="required">*</span>
                     </label>
 
                     <asp:TextBox ID="txtCaptcha"
                         runat="server"
+                        MaxLength="6"
+                        autocomplete="off"
                         CssClass="form-control"
                         placeholder="Enter captcha as shown below" />
 
                     <div class="captcha-display">
                         <asp:Image ID="imgCaptcha"
                             runat="server"
-                            ImageUrl="~/Captcha.aspx"
+                            ImageUrl="~/Captcha"
                             AlternateText="Captcha" />
 
                         <asp:LinkButton ID="btnRefreshCaptcha"
@@ -89,7 +92,7 @@
                             <i class="bi bi-arrow-repeat"></i>
                         </asp:LinkButton>
                     </div>
-                </div>--%>
+                </div>
 
                 <!-- Login Button -->
                 <div class="login-button-section">
