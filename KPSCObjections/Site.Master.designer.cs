@@ -15,11 +15,6 @@ namespace KPSCObjections
     {
 
         /// <summary>
-        /// pnlNavigation control.
-        /// </summary>
-        protected global::System.Web.UI.WebControls.Panel pnlNavigation;
-
-        /// <summary>
         /// HeadContent control.
         /// </summary>
         /// <remarks>
@@ -27,6 +22,15 @@ namespace KPSCObjections
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.ContentPlaceHolder HeadContent;
+
+        /// <summary>
+        /// pnlNavigation control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlNavigation;
 
         /// <summary>
         /// lblCandidateName control.
