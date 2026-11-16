@@ -11,7 +11,7 @@ namespace KPSCObjections
         {
             if (!IsPostBack && AuthSession.IsAdmin(Context))
             {
-                Response.Redirect("~/UploadKeyAnswer.aspx", true);
+                Response.Redirect("~/Dashboard.aspx", true);
             }
 
             if (!IsPostBack)
@@ -83,7 +83,7 @@ namespace KPSCObjections
             {
                 case AdminAuth.Result.Ok:
                     AuthSession.SignInAdmin(Context, userName);
-                    Response.Redirect("~/UploadKeyAnswer.aspx", true);
+                    Response.Redirect("~/Dashboard.aspx", true);
                     break;
 
                 default:

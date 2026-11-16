@@ -271,6 +271,7 @@
     <Content Include="PaymentPush.ashx" />
     <Content Include="ObjectionDocument.ashx" />
     <Content Include="CandidateObjections.aspx" />
+    <Content Include="Dashboard.aspx" />
     <Content Include="UploadCandidates.aspx" />
     <Content Include="UploadKeyAnswer.aspx" />
     <Content Include="Web.config" />
@@ -388,6 +389,13 @@
     </Compile>
     <Compile Include="CandidateObjections.aspx.designer.cs">
       <DependentUpon>CandidateObjections.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Dashboard.aspx.cs">
+      <DependentUpon>Dashboard.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Dashboard.aspx.designer.cs">
+      <DependentUpon>Dashboard.aspx</DependentUpon>
     </Compile>
     <Compile Include="UploadCandidates.aspx.cs">
       <DependentUpon>UploadCandidates.aspx</DependentUpon>

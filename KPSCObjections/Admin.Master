@@ -82,9 +82,13 @@
 
         <div class="nav-links">
 
-            <a href="~/UploadKeyAnswer.aspx" runat="server"
+            <a href="~/Dashboard.aspx" runat="server"
                 class="home-link" title="Home">
                 &#8962;
+            </a>
+
+            <a href="~/Dashboard.aspx" runat="server">
+                DASHBOARD
             </a>
 
             <a href="~/UploadCandidates.aspx" runat="server">
