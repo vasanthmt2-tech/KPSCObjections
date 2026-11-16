@@ -77,13 +77,13 @@
                     <asp:Button ID="btnGetOTP"
                         runat="server"
                         Text="Get OTP"
-                        CssClass="btn btn-success"
+                        CssClass="btn btn-success btn-sm"
                         OnClick="btnGetOTP_Click" />
 
                     <asp:Button ID="btnResendOTP"
                         runat="server"
                         Text="Resend OTP"
-                        CssClass="btn btn-outline-primary"
+                        CssClass="btn btn-outline-primary btn-sm"
                         CausesValidation="false"
                         OnClick="btnResendOTP_Click" />
 
