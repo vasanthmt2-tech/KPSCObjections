@@ -20,7 +20,7 @@
         <script src="<%: ResolveUrl("~/Scripts/no-context-menu.js") %>"></script>
         <%-- Form submissions are encrypted in the browser (Security/EncryptedForms.cs). --%>
         <meta name="kpsc-enc-key" content="<%: KPSCObjections.Security.EncryptedForms.PublicKey %>" />
-        <script src="<%: ResolveUrl("~/Scripts/form-encrypt.js") %>"></script>
+        <script src="<%: ResolveUrl("~/Scripts/form-encrypt.js") %>?v=2"></script>
     </asp:PlaceHolder>
 
     <webopt:bundlereference runat="server" path="~/Content/css" />

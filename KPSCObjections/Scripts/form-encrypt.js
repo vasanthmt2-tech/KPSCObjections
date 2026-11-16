@@ -145,11 +145,41 @@
 
             document.body.appendChild(post);
             nativeSubmit.call(post);
+
+            // A file download (Excel, ZIP, PDF) answers the post without
+            // leaving this page, so the page must be able to post again.
+            // The fields were already copied, so clear the postback target
+            // as a fresh page would have it; otherwise a later button click
+            // could be taken as the earlier link's click.
+            clearPostBackTarget(form);
+
+            window.setTimeout(function () {
+                busy = false;
+
+                if (post.parentNode) {
+                    post.parentNode.removeChild(post);
+                }
+            }, 1500);
         }).catch(function () {
             busy = false;
             window.alert('This page could not send the form securely. Please reload the page and try again.');
         });
     }
+
+    function clearPostBackTarget(form) {
+        ['__EVENTTARGET', '__EVENTARGUMENT'].forEach(function (name) {
+            var field = form.elements[name];
+
+            if (field && field.value !== undefined) {
+                field.value = '';
+            }
+        });
+    }
+
+    // Coming back to this page from the browser's history: allow posting again.
+    window.addEventListener('pageshow', function () {
+        busy = false;
+    });
 
     // Remember which submit button was used (for browsers without event.submitter).
     document.addEventListener('click', function (e) {
