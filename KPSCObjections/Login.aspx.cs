@@ -117,7 +117,8 @@ namespace KPSCObjections
             else
                 btnResendOTP.Attributes.Remove("disabled");
 
-            if (otpRequested && wait > 0)
+            // No countdown under an "OTP limit reached" message.
+            if (otpRequested && wait > 0 && !smsCapReached)
                 lblMessage.Attributes["data-resend-seconds"] = wait.ToString();
             else
                 lblMessage.Attributes.Remove("data-resend-seconds");
@@ -157,6 +158,11 @@ namespace KPSCObjections
                 ShowError("Please enter the correct captcha.");
                 return;
             }
+
+            // Caps on SMS volume (cost), on top of the per-IP limit and the
+            // 60-second wait per registration number.
+            if (!WithinSmsCaps(regNo))
+                return;
 
             // From here on every outcome shows the same message, so the page does
             // not reveal which registration numbers exist (user enumeration).
@@ -198,6 +204,9 @@ namespace KPSCObjections
                 return;
             }
 
+            bool firstOverCap;
+            RequestThrottle.Allow(SmsHourBucket, "all", int.MaxValue, TimeSpan.FromHours(1), out firstOverCap);
+
             if (!SendSMS(mobile, otp))
             {
                 InvalidateOTP(regNo);
@@ -206,6 +215,62 @@ namespace KPSCObjections
             }
 
             ShowSuccess(OtpRequestedMessage);
+        }
+
+        /// <summary>Set when this request was refused by an SMS cap.</summary>
+        private bool smsCapReached;
+
+        private const string SmsHourBucket = "otp-sms-hour";
+        private const string RegNoDayBucket = "otp-requests-day";
+
+        /// <summary>
+        /// False (with a message shown) when:
+        ///  - OTP requests for this registration number today reached
+        ///    OtpRequestsPerRegNoPerDay. Counted for every request, whether
+        ///    or not the number is registered, so the message does not reveal
+        ///    which numbers exist;
+        ///  - OTP SMS sent by the portal in the current hour reached
+        ///    OtpSmsPerHour (a ceiling on cost if the other limits are beaten).
+        /// Both counters are kept in memory and start again when the
+        /// application restarts.
+        /// </summary>
+        private bool WithinSmsCaps(string regNo)
+        {
+            int perHour = RequestThrottle.Setting("OtpSmsPerHour", 2000);
+
+            if (RequestThrottle.Count(SmsHourBucket, "all") >= perHour)
+            {
+                if (RequestThrottle.Count(SmsHourBucket, "all-refused") == 0)
+                {
+                    AppLog.Write("WARN", "OTP SMS limit of " + perHour + " an hour reached; " +
+                                 "OTP requests are refused until the hour is over.");
+                }
+
+                bool ignored;
+                RequestThrottle.Allow(SmsHourBucket, "all-refused", int.MaxValue, TimeSpan.FromHours(1), out ignored);
+
+                smsCapReached = true;
+                ShowError("The OTP service is busy. Please try again after some time.");
+                return false;
+            }
+
+            int perDay = RequestThrottle.Setting("OtpRequestsPerRegNoPerDay", 10);
+            bool firstRejection;
+
+            if (!RequestThrottle.Allow(RegNoDayBucket, regNo.ToUpperInvariant(), perDay, TimeSpan.FromDays(1), out firstRejection))
+            {
+                if (firstRejection)
+                {
+                    AppLog.Write("WARN", "OTP requests for registration number " + regNo + " reached " + perDay +
+                                 " in a day (last from " + RequestThrottle.ClientIp(Context) + "); further ones refused.");
+                }
+
+                smsCapReached = true;
+                ShowError("Too many OTP requests for this registration number today. Please try again tomorrow.");
+                return false;
+            }
+
+            return true;
         }
 
         /// <summary>Shown for every OTP request, whether or not the details matched.</summary>

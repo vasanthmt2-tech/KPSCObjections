@@ -14,7 +14,13 @@ namespace KPSCObjections.Security
         {
             if (!AuthSession.IsCandidate(Context))
             {
-                AuthSession.SignOut(Context);
+                // A signed-in admin who opens a candidate page keeps the admin
+                // sign-in; otherwise a link to a candidate page (from any site)
+                // could sign an admin out. An invalid session was already
+                // cleared by the check above.
+                if (!AuthSession.IsAdmin(Context))
+                    AuthSession.SignOut(Context);
+
                 Response.Redirect("~/Login.aspx", true);
             }
 
@@ -41,7 +47,13 @@ namespace KPSCObjections.Security
         {
             if (!AuthSession.IsAdmin(Context))
             {
-                AuthSession.SignOut(Context);
+                // A signed-in candidate who opens an admin page keeps the
+                // candidate sign-in; otherwise a link to an admin page (from any
+                // site) could sign a candidate out. An invalid session was
+                // already cleared by the check above.
+                if (!AuthSession.IsCandidate(Context))
+                    AuthSession.SignOut(Context);
+
                 Response.Redirect("~/AdminLogin.aspx", true);
             }
 
