@@ -537,6 +537,10 @@ namespace KPSCObjections
 
                 // 9. Upload Successful
 
+                AdminAudit.Record(Context, AdminAudit.UploadKeyAnswers,
+                    "Exam " + examCode + ", subject " + subjectCode + ": " +
+                    answerRows.Count + " key answers from file " + originalFileName);
+
                 ShowMessage(
                     answerRows.Count +
                     " key answer records and Excel document " +
@@ -697,6 +701,9 @@ namespace KPSCObjections
                     .Replace("\r", "")
                     .Replace("\n", "");
 
+            AdminAudit.Record(Context, AdminAudit.DownloadKeyAnswers,
+                "Document " + documentId + ": " + downloadFileName);
+
             Response.Clear();
             Response.Buffer = true;
 
@@ -833,6 +840,10 @@ namespace KPSCObjections
             {
                 File.Delete(fullPath);
             }
+
+            AdminAudit.Record(Context, AdminAudit.DeleteKeyAnswers,
+                "Document " + documentId + " (exam " + examCode + ", subject " + subjectCode + "): " +
+                deletedKeyAnswerCount + " key answers deleted");
 
             // 6. Refresh document grid
 

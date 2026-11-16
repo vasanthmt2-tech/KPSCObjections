@@ -111,6 +111,10 @@
                 OBJECTION WINDOW
             </a>
 
+            <a href="~/AuditTrail.aspx" runat="server">
+                AUDIT TRAIL
+            </a>
+
            <%-- <a href="~/Payments.aspx" runat="server">
                 PAYMENTS
             </a>--%>

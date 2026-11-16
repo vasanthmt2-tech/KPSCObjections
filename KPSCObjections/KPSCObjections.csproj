@@ -270,6 +270,7 @@
     <Content Include="NotFound.aspx" />
     <Content Include="PaymentPush.ashx" />
     <Content Include="ObjectionDocument.ashx" />
+    <Content Include="AuditTrail.aspx" />
     <Content Include="CandidateObjections.aspx" />
     <Content Include="Dashboard.aspx" />
     <Content Include="ObjectionWindow.aspx" />
@@ -361,6 +362,7 @@
     <Compile Include="Payments\PendingPaymentChecker.cs" />
     <Compile Include="Payments\SbiEpay.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Security\AdminAudit.cs" />
     <Compile Include="Security\AdminAuth.cs" />
     <Compile Include="Security\AuthSession.cs" />
     <Compile Include="Security\AppLog.cs" />
@@ -384,6 +386,13 @@
     </Compile>
     <Compile Include="Site.Master.designer.cs">
       <DependentUpon>Site.Master</DependentUpon>
+    </Compile>
+    <Compile Include="AuditTrail.aspx.cs">
+      <DependentUpon>AuditTrail.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="AuditTrail.aspx.designer.cs">
+      <DependentUpon>AuditTrail.aspx</DependentUpon>
     </Compile>
     <Compile Include="CandidateObjections.aspx.cs">
       <DependentUpon>CandidateObjections.aspx</DependentUpon>

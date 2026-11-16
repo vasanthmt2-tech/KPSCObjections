@@ -82,6 +82,7 @@ namespace KPSCObjections
             switch (result)
             {
                 case AdminAuth.Result.Ok:
+                    AdminAudit.Record(Context, userName, AdminAudit.SignIn, "");
                     AuthSession.SignInAdmin(Context, userName);
                     Response.Redirect("~/Dashboard.aspx", true);
                     break;
@@ -89,7 +90,12 @@ namespace KPSCObjections
                 default:
                     // Same message for a wrong password, an unknown user and a
                     // locked account: "locked" would confirm the user name exists.
-                    // The lockout itself still applies (AdminAuth).
+                    // The lockout itself still applies (AdminAuth). The audit
+                    // trail (admins only) does record which it was.
+                    AdminAudit.Record(Context, userName, AdminAudit.SignInFailed,
+                        result == AdminAuth.Result.LockedOut
+                            ? "Account locked (too many wrong passwords)"
+                            : "Wrong user name or password");
                     Alert(FailedLoginMessage);
                     break;
             }

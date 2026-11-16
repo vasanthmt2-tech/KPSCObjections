@@ -110,9 +110,10 @@ namespace KPSCObjections
                 return;
             }
 
-            AppLog.Write("INFO", "Objection window of examination " + examCode + " changed from " +
-                Show(LoadedStart) + " - " + Show(LoadedEnd) + " to " + Show(start) + " - " + Show(end) +
-                " by admin " + AdminName() + " from " + RequestThrottle.ClientIp(Context));
+            // Recorded in the audit trail (and the application log).
+            AdminAudit.Record(Context, AdminAudit.ChangeObjectionWindow,
+                "Exam " + examCode + ": from " + Show(LoadedStart) + " - " + Show(LoadedEnd) +
+                " to " + Show(start) + " - " + Show(end));
 
             LoadWindow();
             ShowMessage("The objection window has been saved. Candidates see the change at once.", true);
@@ -218,11 +219,6 @@ namespace KPSCObjections
         private static string Show(DateTime? value)
         {
             return value.HasValue ? value.Value.ToString(ShowFormat, CultureInfo.InvariantCulture) : "(not set)";
-        }
-
-        private string AdminName()
-        {
-            return Convert.ToString(Session[AuthSession.AdminKey]);
         }
 
         private void ShowMessage(string message, bool ok)

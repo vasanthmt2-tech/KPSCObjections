@@ -28,6 +28,9 @@ namespace KPSCObjections
 
         protected void btnLogout_Click(object sender, EventArgs e)
         {
+            if (AuthSession.IsAdmin(Context))
+                AdminAudit.Record(Context, AdminAudit.SignOut, "");
+
             AuthSession.SignOut(Context);
 
             Response.Redirect("~/AdminLogin.aspx", true);

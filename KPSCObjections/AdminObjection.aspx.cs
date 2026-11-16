@@ -264,6 +264,9 @@ ORDER BY o.VersionCode;", "@PaperCode,@MasterQuestionNo", "@" + subjectCode + ",
                 lblVerifyResult.Text =
                     "Pending payments re-checked: " + succeeded + " confirmed, " +
                     failed + " not completed, " + stillPending + " still pending.";
+
+                AdminAudit.Record(Context, AdminAudit.RecheckPayments,
+                    succeeded + " confirmed, " + failed + " not completed, " + stillPending + " still pending");
             }
             catch (Exception ex)
             {
@@ -297,6 +300,9 @@ ORDER BY o.VersionCode;", "@PaperCode,@MasterQuestionNo", "@" + subjectCode + ",
                 string questionNo =
                     gvObjectionSummary.DataKeys[index].Values["QuestionNo"].ToString();
 
+                AdminAudit.Record(Context, AdminAudit.DownloadObjectionsZip,
+                    "Paper " + subjectCode + ", question " + questionNo);
+
                 DownloadObjectionDocuments(subjectCode, questionNo);
             }
             else if (e.CommandName == "DownloadExcel")
@@ -308,6 +314,9 @@ ORDER BY o.VersionCode;", "@PaperCode,@MasterQuestionNo", "@" + subjectCode + ",
 
                 string questionNo =
                     gvObjectionSummary.DataKeys[rowIndex].Values["QuestionNo"].ToString();
+
+                AdminAudit.Record(Context, AdminAudit.DownloadObjectionsExcel,
+                    "Paper " + subjectCode + ", question " + questionNo);
 
                 DownloadObjectionExcel(subjectCode, questionNo);
             }

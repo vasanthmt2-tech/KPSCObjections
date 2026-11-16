@@ -63,6 +63,10 @@ namespace KPSCObjections
             SearchedRegNo = regNo;
             gvObjections.PageIndex = 0;
             BindObjections();
+
+            // Looking up one candidate's objections is recorded; the full list is not.
+            KPSCObjections.Security.AdminAudit.Record(Context,
+                KPSCObjections.Security.AdminAudit.ViewCandidateObjections, "Reg No " + regNo);
         }
 
         protected void btnShowAll_Click(object sender, EventArgs e)

@@ -258,6 +258,10 @@ namespace KPSCObjections
                 return;
             }
 
+            AdminAudit.Record(Context, AdminAudit.UploadCandidates,
+                "Exam " + examCode + ": " + candidates.Rows.Count + " candidates from file " +
+                Path.GetFileName(fuCandidates.FileName));
+
             ShowMessage(candidates.Rows.Count + " candidates uploaded successfully.", true);
 
             txtSearch.Text = "";
@@ -489,6 +493,10 @@ namespace KPSCObjections
 
                 int deleted = Convert.ToInt32(dt.Rows[0]["Deleted"]);
                 int kept = Convert.ToInt32(dt.Rows[0]["Kept"]);
+
+                AdminAudit.Record(Context, AdminAudit.DeleteAllCandidates,
+                    "Exam " + examCode + ": " + deleted + " deleted, " + kept +
+                    " kept (have objections or payments)");
 
                 ShowMessage(
                     deleted + " candidates deleted." +
