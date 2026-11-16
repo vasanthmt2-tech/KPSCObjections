@@ -90,6 +90,8 @@
                             <asp:Literal ID="litWindow" runat="server" />
                         </asp:Panel>
                         <div class="dash-sub"><asp:Literal ID="litWindowSub" runat="server" /></div>
+                        <asp:HyperLink ID="lnkEditWindow" runat="server" CssClass="small"
+                            Text="Change the window" />
                     </div>
                 </div>
             </div>

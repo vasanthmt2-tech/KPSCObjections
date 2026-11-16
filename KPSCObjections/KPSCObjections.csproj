@@ -272,6 +272,7 @@
     <Content Include="ObjectionDocument.ashx" />
     <Content Include="CandidateObjections.aspx" />
     <Content Include="Dashboard.aspx" />
+    <Content Include="ObjectionWindow.aspx" />
     <Content Include="UploadCandidates.aspx" />
     <Content Include="UploadKeyAnswer.aspx" />
     <Content Include="Web.config" />
@@ -396,6 +397,13 @@
     </Compile>
     <Compile Include="Dashboard.aspx.designer.cs">
       <DependentUpon>Dashboard.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="ObjectionWindow.aspx.cs">
+      <DependentUpon>ObjectionWindow.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="ObjectionWindow.aspx.designer.cs">
+      <DependentUpon>ObjectionWindow.aspx</DependentUpon>
     </Compile>
     <Compile Include="UploadCandidates.aspx.cs">
       <DependentUpon>UploadCandidates.aspx</DependentUpon>

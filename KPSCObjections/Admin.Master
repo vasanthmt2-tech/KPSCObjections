@@ -107,6 +107,10 @@
                 CANDIDATE OBJECTIONS
             </a>
 
+            <a href="~/ObjectionWindow.aspx" runat="server">
+                OBJECTION WINDOW
+            </a>
+
            <%-- <a href="~/Payments.aspx" runat="server">
                 PAYMENTS
             </a>--%>

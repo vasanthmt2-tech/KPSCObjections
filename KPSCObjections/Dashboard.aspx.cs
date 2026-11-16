@@ -224,6 +224,7 @@ namespace KPSCObjections
             litWindow.Text = Html(status);
             litWindowSub.Text = Html(detail);
             pnlWindowValue.CssClass = "dash-value " + css;
+            lnkEditWindow.NavigateUrl = "~/ObjectionWindow.aspx?exam=" + HttpUtility.UrlEncode(ExamCode);
         }
 
         // ---------------------------------------------------------------

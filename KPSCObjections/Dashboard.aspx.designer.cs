@@ -33,6 +33,7 @@ namespace KPSCObjections
         protected global::System.Web.UI.WebControls.Panel pnlWindowValue;
         protected global::System.Web.UI.WebControls.Literal litWindow;
         protected global::System.Web.UI.WebControls.Literal litWindowSub;
+        protected global::System.Web.UI.WebControls.HyperLink lnkEditWindow;
         protected global::System.Web.UI.WebControls.Repeater rptSubjects;
         protected global::System.Web.UI.WebControls.Repeater rptTopQuestions;
         protected global::System.Web.UI.WebControls.Label lblNoTopQuestions;
