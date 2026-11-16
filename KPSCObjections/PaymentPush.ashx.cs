@@ -21,10 +21,11 @@ namespace KPSCObjections
         {
             try
             {
-                string data = context.Request.Form["pushRespData"];
+                // Junk posts are logged briefly and limited per address (PaymentCallback).
+                string orderNo = PaymentCallback.ReadOrderNo(context, "pushRespData", "push");
 
-                if (!string.IsNullOrWhiteSpace(data))
-                    PaymentService.Verify(SbiEpay.ParseEncryptedResponse(data).OrderNo);
+                if (orderNo != null)
+                    PaymentService.Verify(orderNo);
             }
             catch (Exception ex)
             {

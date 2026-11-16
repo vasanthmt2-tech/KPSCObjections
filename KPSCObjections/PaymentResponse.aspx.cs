@@ -24,13 +24,11 @@ namespace KPSCObjections
 
             try
             {
-                string encData = Request.Form["encData"];
+                // Junk posts are logged briefly and limited per address (PaymentCallback).
+                orderNo = PaymentCallback.ReadOrderNo(Context, "encData", "browser return");
 
-                if (!string.IsNullOrWhiteSpace(encData))
-                {
-                    orderNo = SbiEpay.ParseEncryptedResponse(encData).OrderNo;
+                if (orderNo != null)
                     status = PaymentService.Verify(orderNo);
-                }
             }
             catch (Exception ex)
             {

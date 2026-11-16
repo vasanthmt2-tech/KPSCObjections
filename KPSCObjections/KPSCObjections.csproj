@@ -355,6 +355,7 @@
       <DependentUpon>PaymentPush.ashx</DependentUpon>
     </Compile>
     <Compile Include="Payments\ObjectionRules.cs" />
+    <Compile Include="Payments\PaymentCallback.cs" />
     <Compile Include="Payments\PdfHeaderStamper.cs" />
     <Compile Include="Payments\PaymentService.cs" />
     <Compile Include="Payments\PendingPaymentChecker.cs" />

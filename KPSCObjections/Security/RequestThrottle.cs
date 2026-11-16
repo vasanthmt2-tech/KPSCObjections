@@ -45,6 +45,14 @@ namespace KPSCObjections.Security
             return count <= limit;
         }
 
+        /// <summary>Requests counted for <paramref name="key"/> in the current window (0 if none).</summary>
+        public static int Count(string bucket, string key)
+        {
+            Counter counter = HttpRuntime.Cache["throttle:" + bucket + ":" + key] as Counter;
+
+            return counter == null ? 0 : Volatile.Read(ref counter.Count);
+        }
+
         /// <summary>
         /// The client's IP address. X-Forwarded-For is used only when the
         /// direct peer is listed in the TrustedProxies setting (comma-separated
