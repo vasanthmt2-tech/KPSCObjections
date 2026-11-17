@@ -40,6 +40,8 @@
             <asp:Label ID="lblSummary" runat="server" CssClass="fw-bold" />
         </div>
 
+        <%-- Scrolls inside its own box on narrow screens. --%>
+        <div class="table-responsive">
         <asp:GridView ID="gvAudit"
             runat="server"
             AutoGenerateColumns="False"
@@ -60,6 +62,7 @@
             <HeaderStyle CssClass="table-dark" />
             <PagerStyle CssClass="grid-pager" />
         </asp:GridView>
+        </div>
 
     </div>
 

@@ -190,15 +190,24 @@ namespace KPSCObjections
         private void BindWindow()
         {
             DataTable dt = sh.ExecuteDataTable(
-                "SELECT ObjectionStart, ObjectionEnd FROM dbo.Exam WHERE ExamCode = @ExamCode", ExamParam());
+                "SELECT ObjectionStart, ObjectionEnd, IsActive FROM dbo.Exam WHERE ExamCode = @ExamCode", ExamParam());
 
             object start = dt.Rows.Count > 0 ? dt.Rows[0]["ObjectionStart"] : DBNull.Value;
             object end = dt.Rows.Count > 0 ? dt.Rows[0]["ObjectionEnd"] : DBNull.Value;
+            bool active = dt.Rows.Count > 0 && Convert.ToString(dt.Rows[0]["IsActive"]).Trim() == "Y";
             DateTime now = DateTime.Now;
 
             string status, detail, css;
 
-            if (start != DBNull.Value && now < (DateTime)start)
+            // Candidates cannot sign in to an inactive examination, whatever
+            // its window says (Login lists only IsActive = 'Y').
+            if (!active)
+            {
+                status = "Inactive";
+                detail = "examination not active; candidates cannot sign in";
+                css = "text-secondary";
+            }
+            else if (start != DBNull.Value && now < (DateTime)start)
             {
                 status = "Not started";
                 detail = "opens " + When(start);

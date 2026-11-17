@@ -46,7 +46,10 @@
                             GridLines="None"
                             Width="100%">
 
-                            <Columns>                                
+                            <Columns>
+                                <asp:BoundField DataField="ExamDesc"
+                                   HeaderText="Examination" />
+
                                 <asp:BoundField DataField="SubjectDesc"
                                    HeaderText="Subject" />
 
@@ -91,13 +94,16 @@
                             AutoGenerateColumns="False"
                             CssClass="table table-bordered table-striped table-hover"
                             HeaderStyle-CssClass="table-dark"
-                            DataKeyNames="SubjectCode,QuestionNo"
+                            DataKeyNames="ExamCode,SubjectCode,QuestionNo"
                             EmptyDataText="No objection summary available."
                             GridLines="None"
                             Width="100%"
                             OnRowCommand="gvObjectionSummary_RowCommand">
 
                             <Columns>
+                                <asp:BoundField DataField="ExamDesc"
+                                   HeaderText="Examination" />
+
                                 <asp:BoundField DataField="SubjectDesc"
                                    HeaderText="Subject" />
 

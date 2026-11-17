@@ -72,13 +72,15 @@ namespace KPSCObjections
             {
                 string query = @"
                     SELECT
-                        DocumentId,
-                        ExamCode,
-                        SubjectCode,
-                        FileName,
-                        UploadedOn
-                    FROM dbo.UploadedKeyAnswerDocuments
-                    ORDER BY UploadedOn DESC";
+                        d.DocumentId,
+                        d.ExamCode,
+                        ISNULL(e.ExamDescription, d.ExamCode) AS ExamDesc,
+                        d.SubjectCode,
+                        d.FileName,
+                        d.UploadedOn
+                    FROM dbo.UploadedKeyAnswerDocuments d
+                    LEFT JOIN dbo.Exam e ON e.ExamCode = d.ExamCode
+                    ORDER BY d.UploadedOn DESC";
 
                 using (SqlDataAdapter da =
                     new SqlDataAdapter(query, con))

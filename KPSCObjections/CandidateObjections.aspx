@@ -45,6 +45,8 @@
             <asp:Label ID="lblSummary" runat="server" CssClass="fw-bold" />
         </div>
 
+        <%-- Scrolls inside its own box on narrow screens. --%>
+        <div class="table-responsive">
         <asp:GridView ID="gvObjections"
             runat="server"
             AutoGenerateColumns="False"
@@ -69,7 +71,7 @@
                 <asp:BoundField DataField="QuestionNo" HeaderText="Question No." />
                 <asp:BoundField DataField="KeyAnswer" HeaderText="Key Answer" />
                 <asp:BoundField DataField="ObjectionAnswer" HeaderText="Objection Answer" />
-                <asp:BoundField DataField="CategoryCode" HeaderText="Category Code" />
+                <asp:BoundField DataField="Category" HeaderText="Category" />
                 <asp:BoundField DataField="Remarks" HeaderText="Remarks"
                     ItemStyle-CssClass="text-break" ItemStyle-Width="35%" />
 
@@ -78,6 +80,7 @@
             <HeaderStyle CssClass="table-dark" />
             <PagerStyle CssClass="grid-pager" />
         </asp:GridView>
+        </div>
 
     </div>
 

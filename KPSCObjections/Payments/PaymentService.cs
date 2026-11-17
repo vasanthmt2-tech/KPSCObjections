@@ -175,6 +175,24 @@ namespace KPSCObjections.Payments
                     if (payment.AgeMinutes >= AbandonMinutes)
                         outcome = Failed;
                     break;
+
+                case SbiStatus.Unknown:
+                    // A reply that could not be read (wrong URL, an error page,
+                    // a format change). The payment stays pending; logged at
+                    // most once an hour per order, as the re-check repeats.
+                    if (System.Web.HttpRuntime.Cache.Add("sbi-unreadable:" + payment.OrderNo, true, null,
+                            DateTime.UtcNow.AddHours(1), System.Web.Caching.Cache.NoSlidingExpiration,
+                            System.Web.Caching.CacheItemPriority.Normal, null) == null)
+                    {
+                        string status = System.Text.RegularExpressions.Regex.Replace(
+                            result.RawStatus ?? "", @"\p{C}", " ").Trim();
+
+                        AppLog.Write("WARN", "SBI status query for order " + payment.OrderNo +
+                                     " gave a reply that could not be read" +
+                                     (status.Length == 0 ? "" : " (status \"" + (status.Length > 40 ? status.Substring(0, 40) : status) + "\")") +
+                                     "; payment left pending. Check SBIDoubleVerificationUrl and that SBI ePay answers it.");
+                    }
+                    break;
             }
 
             return Apply(payment.OrderNo, outcome, result);

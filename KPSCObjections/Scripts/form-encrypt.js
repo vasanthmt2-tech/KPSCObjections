@@ -32,6 +32,30 @@
     var lastSubmitter = null;
     var publicKeyPromise = null;
 
+    // The server refuses (HTTP 400) any field where "<" is followed by a
+    // letter, "!", "/" or "?", or that contains "&#" (ASP.NET request
+    // validation), and the page with everything typed is lost. Such text is
+    // caught here first, so the form stays as it is.
+    var refusedText = /<[a-zA-Z!\/?]|&#/;
+
+    function fieldName(field) {
+        var label = field.id ? document.querySelector('label[for="' + field.id + '"]') : null;
+        var text = label ? label.textContent : (field.getAttribute('placeholder') || field.name || '');
+        return text.replace(/\*/g, '').replace(/\s+/g, ' ').trim();
+    }
+
+    function refusedField(form) {
+        var fields = form.querySelectorAll('textarea, input[type="text"], input[type="password"], input[type="search"], input:not([type])');
+
+        for (var i = 0; i < fields.length; i++) {
+            if (!fields[i].disabled && refusedText.test(fields[i].value || '')) {
+                return fields[i];
+            }
+        }
+
+        return null;
+    }
+
     function toBase64(buffer) {
         var bytes = new Uint8Array(buffer);
         var text = '';
@@ -119,6 +143,17 @@
 
         if (!window.crypto || !window.crypto.subtle || !window.TextEncoder) {
             window.alert('This page could not send the form securely. Please open the portal over https:// and try again.');
+            return;
+        }
+
+        var refused = refusedField(form);
+
+        if (refused) {
+            var name = fieldName(refused);
+            window.alert((name ? name + ': ' : '') +
+                'please remove "<" directly before a letter (for example write "x < y" with spaces, ' +
+                'or "less than") and "&#", then try again. Nothing has been sent.');
+            refused.focus();
             return;
         }
 

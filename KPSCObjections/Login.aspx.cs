@@ -78,7 +78,8 @@ namespace KPSCObjections
 
             if (wait > 0)
             {
-                ShowError("Please wait " + wait + " seconds before requesting a new OTP.");
+                // The seconds left are added by the countdown (OnPreRender).
+                ShowError("An OTP was sent recently and is still valid.");
                 return;
             }
 

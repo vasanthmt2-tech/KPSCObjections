@@ -28,12 +28,17 @@ namespace KPSCObjections
         public void LoadObjectionDetails()
         {
             // Only objections whose payment is confirmed count as submitted.
-            DataTable dt = sh.ExecuteDataTable(@"SELECT o.PaperCode as SubjectCode, SubjectDescription as SubjectDesc,o.RegNo,o.VersionCode,o.QuestionNo,KeyAnswer,ObjectionAnswer,Remarks, filename as SupportingDocument,
+            // The paper's name and the examination come from the candidate's
+            // own examination: paper codes (P1, P2) repeat in every examination.
+            DataTable dt = sh.ExecuteDataTable(@"SELECT ISNULL(e.ExamDescription, c.ExamCode) AS ExamDesc,
+                            o.PaperCode as SubjectCode, s.SubjectDescription as SubjectDesc,o.RegNo,o.VersionCode,o.QuestionNo,o.KeyAnswer,o.ObjectionAnswer,o.Remarks, d.FileName as SupportingDocument,
                             ISNULL(p.SBIReferenceNo, p.MerchantOrderNo) as TransactionID,CONVERT(varchar(10), ISNULL(p.PaymentDate, p.CreatedDate),103) SubmittedDate FROM Objections o
                             inner join PaymentTransactions p on p.PaymentId = o.PaymentId and p.PaymentStatus = 'SUCCESS'
                             inner join ObjectionsDocument d on o.regno = d.regno and o.PaperCode = d.PaperCode and o.QuestionNo = d.QuestionNo
-                            left outer join Subject s on o.PaperCode = s.PaperCode
-                            order by o.PaperCode, o.QuestionNo, o.RegNo");
+                            inner join Candidate c on c.RegNo = o.RegNo
+                            left outer join Exam e on e.ExamCode = c.ExamCode
+                            left outer join Subject s on s.PaperCode = o.PaperCode and s.ExamCode = c.ExamCode
+                            order by c.ExamCode, o.PaperCode, o.QuestionNo, o.RegNo");
 
             gvObjections.DataSource = dt;
             gvObjections.DataBind();
@@ -46,7 +51,11 @@ namespace KPSCObjections
             // back through that version's Set column (Set1..Set12, see Security\KeySets.cs) to the master
             // question. The Excel and ZIP downloads below take this master
             // question number and apply the same mapping.
+            // Grouped by examination too: paper codes and master question
+            // numbers repeat in every examination.
             DataTable dt = sh.ExecuteDataTable(@"SELECT
+    c.ExamCode,
+    ISNULL(e.ExamDescription, c.ExamCode) AS ExamDesc,
     o.PaperCode AS SubjectCode,
     s.SubjectDescription AS SubjectDesc,
     ka.QuestionNo AS QuestionNo,
@@ -61,8 +70,12 @@ INNER JOIN dbo.PaymentTransactions p
 INNER JOIN dbo.Candidate c
     ON c.RegNo = o.RegNo
 
+LEFT JOIN dbo.Exam e
+    ON e.ExamCode = c.ExamCode
+
 LEFT JOIN dbo.Subject s
-    ON o.PaperCode = s.PaperCode
+    ON s.PaperCode = o.PaperCode
+    AND s.ExamCode = c.ExamCode
 
 INNER JOIN dbo.KeyAnswers ka
     ON ka.ExamCode = c.ExamCode
@@ -71,18 +84,21 @@ INNER JOIN dbo.KeyAnswers ka
         " + KeySets.QuestionColumnSql("ka", "o.VersionCode", true) + @"
 
 GROUP BY
+    c.ExamCode,
+    e.ExamDescription,
     o.PaperCode,
     s.SubjectDescription,
     ka.QuestionNo
 
 ORDER BY
+    c.ExamCode,
     o.PaperCode,
     ka.QuestionNo;");
 
             gvObjectionSummary.DataSource = dt;
             gvObjectionSummary.DataBind();
         }
-        private void DownloadObjectionDocuments(string subjectCode, string questionNo)
+        private void DownloadObjectionDocuments(string examCode, string subjectCode, string questionNo)
         {
 
             //string connectionString = ConfigurationManager.ConnectionStrings["DefaultConnection"].ConnectionString;
@@ -119,9 +135,13 @@ INNER JOIN dbo.ObjectionsDocument d
    AND d.PaperCode = o.PaperCode
    AND d.QuestionNo = o.QuestionNo
 WHERE o.PaperCode = @PaperCode
+  AND c.ExamCode = @ExamCode
   AND o.QuestionNo =
       " + KeySets.QuestionColumnSql("ka", "o.VersionCode", true) + @"
-ORDER BY o.VersionCode;", "@PaperCode,@MasterQuestionNo", "@" + subjectCode + ",@" + questionNo))
+ORDER BY o.VersionCode;",
+                        new SqlParameter("@PaperCode", SqlDbType.VarChar, 5) { Value = subjectCode },
+                        new SqlParameter("@MasterQuestionNo", SqlDbType.Int) { Value = Convert.ToInt32(questionNo) },
+                        new SqlParameter("@ExamCode", SqlDbType.VarChar, 5) { Value = examCode }))
                         {       
                             int count = 0;
 
@@ -190,7 +210,7 @@ ORDER BY o.VersionCode;", "@PaperCode,@MasterQuestionNo", "@" + subjectCode + ",
                 Response.Clear();
                 Response.ContentType = "application/zip";
 
-                Response.AddHeader("Content-Disposition","attachment; filename=Subject_" + subjectCode + "_Question_" + questionNo + ".zip");
+                Response.AddHeader("Content-Disposition","attachment; filename=Exam" + examCode + "_Subject_" + subjectCode + "_Question_" + questionNo + ".zip");
 
                 Response.BinaryWrite(ms.ToArray());
                 Response.Flush();
@@ -268,6 +288,9 @@ ORDER BY o.VersionCode;", "@PaperCode,@MasterQuestionNo", "@" + subjectCode + ",
             {
                 int index = Convert.ToInt32(e.CommandArgument);
 
+                string examCode =
+                    gvObjectionSummary.DataKeys[index].Values["ExamCode"].ToString();
+
                 string subjectCode =
                     gvObjectionSummary.DataKeys[index].Values["SubjectCode"].ToString();
 
@@ -275,13 +298,16 @@ ORDER BY o.VersionCode;", "@PaperCode,@MasterQuestionNo", "@" + subjectCode + ",
                     gvObjectionSummary.DataKeys[index].Values["QuestionNo"].ToString();
 
                 AdminAudit.Record(Context, AdminAudit.DownloadObjectionsZip,
-                    "Paper " + subjectCode + ", question " + questionNo);
+                    "Exam " + examCode + ", paper " + subjectCode + ", question " + questionNo);
 
-                DownloadObjectionDocuments(subjectCode, questionNo);
+                DownloadObjectionDocuments(examCode, subjectCode, questionNo);
             }
             else if (e.CommandName == "DownloadExcel")
             {
                 int rowIndex = Convert.ToInt32(e.CommandArgument);
+
+                string examCode =
+                    gvObjectionSummary.DataKeys[rowIndex].Values["ExamCode"].ToString();
 
                 string subjectCode =
                     gvObjectionSummary.DataKeys[rowIndex].Values["SubjectCode"].ToString();
@@ -290,12 +316,12 @@ ORDER BY o.VersionCode;", "@PaperCode,@MasterQuestionNo", "@" + subjectCode + ",
                     gvObjectionSummary.DataKeys[rowIndex].Values["QuestionNo"].ToString();
 
                 AdminAudit.Record(Context, AdminAudit.DownloadObjectionsExcel,
-                    "Paper " + subjectCode + ", question " + questionNo);
+                    "Exam " + examCode + ", paper " + subjectCode + ", question " + questionNo);
 
-                DownloadObjectionExcel(subjectCode, questionNo);
+                DownloadObjectionExcel(examCode, subjectCode, questionNo);
             }
         }
-        private void DownloadObjectionExcel(string subjectCode, string questionNo)
+        private void DownloadObjectionExcel(string examCode, string subjectCode, string questionNo)
         {
             //ObjectionSession.LoginDetails ssen = (ObjectionSession.LoginDetails)Session["LoginValid"];
 
@@ -319,11 +345,13 @@ INNER JOIN dbo.Candidate c
     ON c.RegNo = o.RegNo
 INNER JOIN dbo.Subject s
     ON s.PaperCode = o.PaperCode
+   AND s.ExamCode = c.ExamCode
 INNER JOIN dbo.KeyAnswers ka
     ON ka.ExamCode = c.ExamCode
    AND ka.SubjectCode = o.PaperCode
    AND ka.QuestionNo = @QuestionNo
 WHERE o.PaperCode = @PaperCode
+  AND c.ExamCode = @ExamCode
   AND o.QuestionNo =
       " + KeySets.QuestionColumnSql("ka", "o.VersionCode", true) + @"
 ORDER BY s.SubjectCode, ka.QuestionNo, o.VersionCode;";
@@ -339,6 +367,7 @@ ORDER BY s.SubjectCode, ka.QuestionNo, o.VersionCode;";
                 //cmd.Parameters.AddWithValue("@RegNo", ssen.RegNo);
                 cmd.Parameters.AddWithValue("@PaperCode", subjectCode);
                 cmd.Parameters.AddWithValue("@QuestionNo", questionNo);
+                cmd.Parameters.Add("@ExamCode", SqlDbType.VarChar, 5).Value = examCode;
 
                 da.Fill(dt);
             }
@@ -380,7 +409,7 @@ ORDER BY s.SubjectCode, ka.QuestionNo, o.VersionCode;";
 
                 Response.AddHeader(
                     "Content-Disposition",
-                    "attachment;filename=ObjectionDetails_" +
+                    "attachment;filename=ObjectionDetails_Exam" + examCode + "_" +
                     subjectCode + "_" + questionNo + ".xlsx"
                 );
 

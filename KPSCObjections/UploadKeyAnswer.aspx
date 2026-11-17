@@ -49,6 +49,8 @@
 
         <h4 class="mt-4">Uploaded Key Answer Documents</h4>
 
+        <%-- Scrolls inside its own box on narrow screens. --%>
+        <div class="table-responsive">
         <asp:GridView ID="gvUploadedDocuments"
     runat="server"
     AutoGenerateColumns="False"
@@ -66,9 +68,9 @@
                     </ItemTemplate>
                 </asp:TemplateField>
 
-               <%-- <asp:BoundField
-                    DataField="ExamCode"
-                    HeaderText="Exam Code" />--%>
+                <asp:BoundField
+                    DataField="ExamDesc"
+                    HeaderText="Examination" />
 
                 <asp:BoundField
                     DataField="SubjectCode"
@@ -112,6 +114,7 @@
 
             <HeaderStyle CssClass="table-dark" />
         </asp:GridView>
+        </div>
 
     </div>
 

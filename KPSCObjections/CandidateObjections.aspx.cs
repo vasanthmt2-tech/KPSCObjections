@@ -94,8 +94,11 @@ namespace KPSCObjections
 
             DataTable dt = sh.ExecuteDataTable(
                 @"SELECT o.Regno, o.PaperCode, o.VersionCode, o.QuestionNo, o.KeyAnswer,
-                         o.ObjectionAnswer, o.CategoryCode, o.Remarks
+                         o.ObjectionAnswer,
+                         ISNULL(cat.CategoryDescription, CAST(o.CategoryCode AS varchar(10))) AS Category,
+                         o.Remarks
                   FROM dbo.Objections o" + PaidOnly + @"
+                  LEFT JOIN dbo.Categories cat ON cat.CategoryCode = o.CategoryCode
                   WHERE @RegNo = '' OR o.Regno = @RegNo
                   ORDER BY o.Regno, o.PaperCode, o.QuestionNo",
                 new SqlParameter("@RegNo", SqlDbType.VarChar, 10) { Value = regNo });
