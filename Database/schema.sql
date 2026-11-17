@@ -229,11 +229,6 @@ CREATE NONCLUSTERED INDEX [IX_Objections_PaymentId] ON [dbo].[Objections]
 	[PaymentId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 GO
-ALTER TABLE [dbo].[Objections]  WITH CHECK ADD  CONSTRAINT [FK_Objections_Payment] FOREIGN KEY([PaymentId])
-REFERENCES [dbo].[PaymentTransactions] ([PaymentId])
-GO
-ALTER TABLE [dbo].[Objections] CHECK CONSTRAINT [FK_Objections_Payment]
-GO
 
 -- Table: dbo.ObjectionsDocument
 SET ANSI_NULLS ON
@@ -361,11 +356,6 @@ CREATE TABLE [dbo].[Subject](
 ) ON [PRIMARY]
 
 GO
-ALTER TABLE [dbo].[Subject]  WITH CHECK ADD  CONSTRAINT [FK_ExamSubject] FOREIGN KEY([ExamCode])
-REFERENCES [dbo].[Exam] ([ExamCode])
-GO
-ALTER TABLE [dbo].[Subject] CHECK CONSTRAINT [FK_ExamSubject]
-GO
 
 -- Table: dbo.UploadedKeyAnswerDocuments
 SET ANSI_NULLS ON
@@ -405,6 +395,20 @@ CREATE TABLE [dbo].[Version](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, FILLFACTOR = 80) ON [PRIMARY]
 ) ON [PRIMARY]
 
+GO
+
+-- Foreign key: dbo.Objections.FK_Objections_Payment
+ALTER TABLE [dbo].[Objections]  WITH CHECK ADD  CONSTRAINT [FK_Objections_Payment] FOREIGN KEY([PaymentId])
+REFERENCES [dbo].[PaymentTransactions] ([PaymentId])
+GO
+ALTER TABLE [dbo].[Objections] CHECK CONSTRAINT [FK_Objections_Payment]
+GO
+
+-- Foreign key: dbo.Subject.FK_ExamSubject
+ALTER TABLE [dbo].[Subject]  WITH CHECK ADD  CONSTRAINT [FK_ExamSubject] FOREIGN KEY([ExamCode])
+REFERENCES [dbo].[Exam] ([ExamCode])
+GO
+ALTER TABLE [dbo].[Subject] CHECK CONSTRAINT [FK_ExamSubject]
 GO
 
 -- StoredProcedure: dbo.ObjectionsInsert
@@ -586,7 +590,7 @@ GO
 -- StoredProcedure: dbo.PaymentCreate
 SET ANSI_NULLS ON
 GO
-SET QUOTED_IDENTIFIER OFF
+SET QUOTED_IDENTIFIER ON
 GO
 CREATE PROCEDURE dbo.PaymentCreate
     @RegNo           varchar(10),
