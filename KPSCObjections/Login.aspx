@@ -11,6 +11,10 @@
 
             <div class="login-body">
 
+                <%-- Shown only when Security\TestMode switches are on (Web.config). --%>
+                <asp:Label ID="lblTestMode" runat="server" Visible="false"
+                    CssClass="alert alert-danger d-block fw-bold py-2 mb-3" />
+
                 <%-- Step 1: identify the candidate and request an OTP --%>
 
                 <%-- Registration Number --%>
@@ -41,6 +45,7 @@
                 </div>
 
                 <%-- Captcha: required to send an OTP --%>
+                <asp:PlaceHolder ID="phCaptcha" runat="server">
                 <div class="captcha-section">
 
                     <label class="form-label"
@@ -70,8 +75,10 @@
                         </asp:LinkButton>
                     </div>
                 </div>
+                </asp:PlaceHolder>
 
                 <%-- Get OTP and Resend OTP Buttons --%>
+                <asp:PlaceHolder ID="phOtpButtons" runat="server">
                 <div class="otp-button-row">
 
                     <asp:Button ID="btnGetOTP"
@@ -88,6 +95,7 @@
                         OnClick="btnResendOTP_Click" />
 
                 </div>
+                </asp:PlaceHolder>
 
                 <%-- Status Message --%>
                 <asp:Label ID="lblMessage"

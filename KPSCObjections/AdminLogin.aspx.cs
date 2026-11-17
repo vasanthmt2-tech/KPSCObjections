@@ -14,8 +14,23 @@ namespace KPSCObjections
                 Response.Redirect("~/Dashboard.aspx", true);
             }
 
-            if (!IsPostBack)
+            ApplyTestMode();
+
+            if (!IsPostBack && !TestMode.CaptchaDisabled)
                 RefreshCaptcha();
+        }
+
+        /// <summary>
+        /// TEMPORARY (Security\TestMode.cs): hides the captcha when it is
+        /// switched off in Web.config and shows the test mode banner.
+        /// </summary>
+        private void ApplyTestMode()
+        {
+            phCaptcha.Visible = !TestMode.CaptchaDisabled;
+
+            string banner = TestMode.Banner(false);
+            lblTestMode.Visible = banner.Length > 0;
+            lblTestMode.Text = HttpUtility.HtmlEncode(banner);
         }
 
         protected void btnLogin_Click(object sender, EventArgs e)
@@ -33,8 +48,11 @@ namespace KPSCObjections
             }
 
             // The captcha is single use: whatever happens next, a new one is shown.
-            bool captchaOk = Captcha.Consume(CaptchaToken, txtCaptcha.Text);
-            RefreshCaptcha();
+            // (Skipped only while test mode switches it off.)
+            bool captchaOk = TestMode.CaptchaDisabled || Captcha.Consume(CaptchaToken, txtCaptcha.Text);
+
+            if (!TestMode.CaptchaDisabled)
+                RefreshCaptcha();
 
             if (string.IsNullOrWhiteSpace(userName))
             {

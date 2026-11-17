@@ -23,6 +23,9 @@ namespace KPSCObjections
             // Trace.TraceError(...) anywhere in the app ends up in App_Data\logs.
             Trace.Listeners.Add(new AppLogTraceListener());
 
+            // TEMPORARY test switches (captcha / OTP off) are announced in the log.
+            KPSCObjections.Security.TestMode.LogIfOn();
+
             // PDFsharp 6 (platform-independent build) must be told to use the fonts
             // installed in Windows (Arial, for the header stamped on supporting PDFs).
             // It may be set only once and before PDFsharp reads it, so it is done

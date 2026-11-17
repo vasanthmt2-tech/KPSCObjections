@@ -48,6 +48,8 @@ namespace KPSCObjections
 
         protected void Page_Load(object sender, EventArgs e)
         {
+            ApplyTestMode();
+
             if (!IsPostBack)
             {
                 if (AuthSession.IsCandidate(Context))
@@ -57,8 +59,26 @@ namespace KPSCObjections
 
                 lblMessage.Text = "";
                 BindExamination();
-                RefreshCaptcha();
+
+                if (!TestMode.CaptchaDisabled)
+                    RefreshCaptcha();
             }
+        }
+
+        /// <summary>
+        /// TEMPORARY (Security\TestMode.cs): hides the captcha and / or the OTP
+        /// step when they are switched off in Web.config, and shows the test
+        /// mode banner.
+        /// </summary>
+        private void ApplyTestMode()
+        {
+            phCaptcha.Visible = !TestMode.CaptchaDisabled;
+            phOtpButtons.Visible = !TestMode.OtpDisabled;
+            pnlOTP.Visible = !TestMode.OtpDisabled;
+
+            string banner = TestMode.Banner(true);
+            lblTestMode.Visible = banner.Length > 0;
+            lblTestMode.Text = HttpUtility.HtmlEncode(banner);
         }
 
         // ---------------------------------------------------------------
@@ -154,7 +174,7 @@ namespace KPSCObjections
                 return;
             }
 
-            if (!CheckCaptcha())
+            if (!TestMode.CaptchaDisabled && !CheckCaptcha())
             {
                 ShowError("Please enter the correct captcha.");
                 return;
@@ -285,6 +305,12 @@ namespace KPSCObjections
 
         protected void btnLogin_Click(object sender, EventArgs e)
         {
+            if (TestMode.OtpDisabled)
+            {
+                LoginWithoutOtp();
+                return;
+            }
+
             // Per-IP limit on OTP login attempts (on top of 5 attempts per OTP).
             if (!RequestThrottle.AllowLoginAttempt(Context, "OTP login", "LoginOtpChecksPerIpPerMinute", 20))
             {
@@ -336,6 +362,66 @@ namespace KPSCObjections
             details.Name = Convert.ToString(dt.Rows[0]["Name"]);
             details.Dob = Convert.ToString(dt.Rows[0]["Dob"]);
             details.ExamCode = examCode;
+
+            AuthSession.SignInCandidate(Context, details);
+
+            Response.Redirect("~/Objection.aspx", true);
+        }
+
+        /// <summary>
+        /// TEMPORARY (Security\TestMode.cs, OTP switched off): signs the
+        /// candidate in with registration number and examination only. The
+        /// per-IP limit and (unless also switched off) the captcha still apply.
+        /// </summary>
+        private void LoginWithoutOtp()
+        {
+            if (!RequestThrottle.AllowLoginAttempt(Context, "OTP login", "LoginOtpChecksPerIpPerMinute", 20))
+            {
+                ShowError(RequestThrottle.TooManyAttemptsMessage);
+                return;
+            }
+
+            string regNo = txtRegisterNumber.Text.Trim();
+            string examCode = ddlExamination.SelectedIndex > 0 ? ddlExamination.SelectedValue.Trim() : "";
+
+            if (!RegNoPattern.IsMatch(regNo))
+            {
+                ShowError("Please enter a valid Registration Number.");
+                return;
+            }
+
+            if (examCode.Length == 0)
+            {
+                ShowError("Please select the Examination.");
+                return;
+            }
+
+            if (!TestMode.CaptchaDisabled && !CheckCaptcha())
+            {
+                ShowError("Please enter the correct captcha.");
+                return;
+            }
+
+            DataTable dt = sh.ExecuteDataTable(
+                "SELECT RegNo, Name, Dob FROM dbo.Candidate " +
+                "WHERE RegNo = @RegNo AND LTRIM(RTRIM(ExamCode)) = @ExamCode",
+                new SqlParameter("@RegNo", SqlDbType.VarChar, 10) { Value = regNo },
+                new SqlParameter("@ExamCode", SqlDbType.VarChar, 5) { Value = examCode });
+
+            if (dt.Rows.Count == 0)
+            {
+                ShowError("Candidate details could not be verified.");
+                return;
+            }
+
+            ObjectionSession.LoginDetails details = new ObjectionSession.LoginDetails();
+            details.RegNo = Convert.ToString(dt.Rows[0]["RegNo"]);
+            details.Name = Convert.ToString(dt.Rows[0]["Name"]);
+            details.Dob = Convert.ToString(dt.Rows[0]["Dob"]);
+            details.ExamCode = examCode;
+
+            AppLog.Write("WARN", "TEST MODE sign-in without OTP: " + details.RegNo +
+                         " from " + RequestThrottle.ClientIp(Context));
 
             AuthSession.SignInCandidate(Context, details);
 

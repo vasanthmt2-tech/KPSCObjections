@@ -14,6 +14,10 @@
 
             <div class="login-body">
 
+                <%-- Shown only when Security\TestMode switches are on (Web.config). --%>
+                <asp:Label ID="lblTestMode" runat="server" Visible="false"
+                    CssClass="alert alert-danger d-block fw-bold py-2 mb-3" />
+
                 <%-- Application / Register Number --%>
                 <div class="field-group">
                     <label class="form-label"
@@ -64,6 +68,7 @@
                 </div>--%>
 
                 <%-- Captcha: checked before the password --%>
+                <asp:PlaceHolder ID="phCaptcha" runat="server">
                 <div class="captcha-section">
 
                     <label class="form-label"
@@ -93,6 +98,7 @@
                         </asp:LinkButton>
                     </div>
                 </div>
+                </asp:PlaceHolder>
 
                 <%-- Login Button --%>
                 <div class="login-button-section">

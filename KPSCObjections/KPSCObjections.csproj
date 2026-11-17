@@ -372,6 +372,7 @@
     <Compile Include="Security\HttpsPolicy.cs" />
     <Compile Include="Security\RequestThrottle.cs" />
     <Compile Include="Security\SecurityHeaders.cs" />
+    <Compile Include="Security\TestMode.cs" />
     <Compile Include="Security\SecureMasterPage.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
