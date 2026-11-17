@@ -1,11 +1,11 @@
-<%@ Page Title="Candidate Objections" Language="C#" MasterPageFile="~/Admin.Master" AutoEventWireup="true" CodeBehind="CandidateObjections.aspx.cs" Inherits="KPSCObjections.CandidateObjections" %>
+<%@ Page Title="Candidate Objections - Answer Key Objection Portal" Language="C#" MasterPageFile="~/Admin.Master" AutoEventWireup="true" CodeBehind="CandidateObjections.aspx.cs" Inherits="KPSCObjections.CandidateObjections" %>
 <asp:Content ID="Content1"
     ContentPlaceHolderID="MainContent"
     runat="server">
 
     <div class="container mt-4">
 
-        <h3>Candidate Objections</h3>
+        <h2 class="h3">Candidate Objections</h2>
         <p class="text-muted">Submitted objections only: those whose fee payment succeeded.</p>
 
         <%-- Search: Enter in the box runs the search --%>

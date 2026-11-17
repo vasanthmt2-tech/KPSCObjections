@@ -26,7 +26,8 @@ namespace KPSCObjections
     public partial class Objection : KPSCObjections.Security.CandidatePage
     {
         private const string Select = "---SELECT---";
-        private const int MaxPdfBytes = 1024000;
+        // 1 MB as Windows shows it (1,024 KB), so a file listed as under 1 MB is accepted.
+        private const int MaxPdfBytes = 1024 * 1024;
         private const int MaxRemarks = 700;
         private const int MaxFileName = 50;
         private const string GraceAnswer = "5";
@@ -227,7 +228,7 @@ namespace KPSCObjections
 
                 if (fileData.Length > MaxPdfBytes)
                 {
-                    Alert("Supportive document file size should be less than 1 MB");
+                    Alert("The supporting document must be 1 MB or smaller.");
                     return;
                 }
 
@@ -387,8 +388,16 @@ namespace KPSCObjections
                     : "Only Grace can be selected for this category.";
             }
 
-            if (category != MultipleAnswersCategory && answers.Count != 1)
+            if (category == MultipleAnswersCategory)
+            {
+                // "More than one correct option": the candidate names at least two.
+                if (answers.Count < 2)
+                    return "Please select at least two answers for this category.";
+            }
+            else if (answers.Count != 1)
+            {
                 return "Only one Objection Answer can be selected for this category.";
+            }
 
             return null;
         }

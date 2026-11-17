@@ -1,9 +1,9 @@
-<%@ Page Title="Objection Window" Language="C#" MasterPageFile="~/Admin.Master" AutoEventWireup="true" CodeBehind="ObjectionWindow.aspx.cs" Inherits="KPSCObjections.EditObjectionWindow" %>
+<%@ Page Title="Objection Window - Answer Key Objection Portal" Language="C#" MasterPageFile="~/Admin.Master" AutoEventWireup="true" CodeBehind="ObjectionWindow.aspx.cs" Inherits="KPSCObjections.EditObjectionWindow" %>
 <asp:Content ID="Content1" ContentPlaceHolderID="MainContent" runat="server">
 
     <div class="container mt-4 mb-5" style="max-width: 760px;">
 
-        <h3>Objection Window</h3>
+        <h2 class="h3">Objection Window</h2>
         <p class="text-muted">
             Candidates can add objections and pay the fee only between these times.
             A change applies at once. Payments already started are still verified after the window closes.

@@ -76,14 +76,16 @@
     line-height: 1.5;
 }
 
+/* Dark red: at least 4.5:1 against white (plain red is 4.0:1). */
 .required {
-    color: red;
+    color: #c00000;
 }
 
 /* Captcha Section */
+/* No side padding, so the captcha lines up with the fields above it. */
 .captcha-section {
     margin-top: 30px;
-    padding: 0 10px;
+    padding: 0;
 }
 
     .captcha-section .form-label {
@@ -129,14 +131,16 @@
     width: 114px;
     /*height: 47px;*/
     font-size: 18px;
-    background-color: #f208fa;
-    border-color: #f208fa;
+    /* Darker magenta: white text at 5.9:1 (the earlier #f208fa was 3.4:1). */
+    background-color: #b100b8;
+    border-color: #b100b8;
     border-radius: 5px;
 }
 
-    .login-button:hover {
-        background-color: #c508fa;
-        border-color: #c508fa;
+    .login-button:hover,
+    .login-button:focus {
+        background-color: #9d00a3;
+        border-color: #9d00a3;
     }
 /* OTP textbox and Get OTP button alignment */
 .otp-row {

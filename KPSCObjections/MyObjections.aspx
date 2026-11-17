@@ -1,6 +1,6 @@
-﻿<%@ Page Title="" Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeBehind="MyObjections.aspx.cs" Inherits="KPSCObjections.MyObjections" %>
+﻿<%@ Page Title="My Objections - Answer Key Objection Portal" Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeBehind="MyObjections.aspx.cs" Inherits="KPSCObjections.MyObjections" %>
 <asp:Content ID="Content1" ContentPlaceHolderID="MainContent" runat="server">
-    <link href="css/Objection.css" rel="stylesheet" />
+    <link href="css/Objection.css?v=2" rel="stylesheet" />
     <div class="candidate-panel">
 
            

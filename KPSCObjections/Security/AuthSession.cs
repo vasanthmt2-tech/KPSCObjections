@@ -187,6 +187,19 @@ namespace KPSCObjections.Security
             return IsValid(context, AdminUserKey(userName));
         }
 
+        /// <summary>
+        /// True when the browser still sends a sign-in cookie: this visitor was
+        /// signed in and the session has since ended (idle time-out, maximum
+        /// lifetime, or a newer sign-in elsewhere). Logout removes the cookie,
+        /// so it is false after a deliberate sign-out.
+        /// </summary>
+        public static bool HadSignIn(HttpContext context)
+        {
+            HttpCookie cookie = context.Request.Cookies[TokenCookie];
+
+            return cookie != null && !string.IsNullOrEmpty(cookie.Value);
+        }
+
         public static void SignOut(HttpContext context)
         {
             if (context.Session != null)

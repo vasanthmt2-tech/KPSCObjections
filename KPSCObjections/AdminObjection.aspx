@@ -1,8 +1,8 @@
-﻿<%@ Page Title="" Language="C#" MasterPageFile="~/Admin.Master" AutoEventWireup="true" CodeBehind="AdminObjection.aspx.cs" Inherits="KPSCObjections.AdminObjection" %>
+﻿<%@ Page Title="Objections - Answer Key Objection Portal" Language="C#" MasterPageFile="~/Admin.Master" AutoEventWireup="true" CodeBehind="AdminObjection.aspx.cs" Inherits="KPSCObjections.AdminObjection" %>
 <asp:Content ID="Content1" ContentPlaceHolderID="HeadContent" runat="server">
 </asp:Content>
 <asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="server">
-     <link href="css/Objection.css" rel="stylesheet" />
+     <link href="css/Objection.css?v=2" rel="stylesheet" />
     <div class="candidate-panel">
         <div class="panel-heading">
                 OBJECTION DETAILS
@@ -35,8 +35,17 @@
             </div>
             <div class="candidate-body" id="divObjectionDetails" runat="server">
                 <div class="row">
+                    <%-- Shown 50 at a time; the full list is in the Excel download. --%>
+                    <div class="d-flex flex-wrap align-items-center gap-2 mt-2">
+                        <asp:Label ID="lblDetailsCount" runat="server" CssClass="fw-bold" />
+                        <asp:Button ID="btnDetailsExcel" runat="server"
+                            Text="Download all as Excel"
+                            CssClass="btn btn-success btn-sm"
+                            Visible="false"
+                            OnClick="btnDetailsExcel_Click" />
+                    </div>
                         <%-- Objection Details Grid --%>
-                    <div class="table-responsive mt-4">
+                    <div class="table-responsive mt-3">
                         <asp:GridView ID="gvObjections" runat="server"
                             AutoGenerateColumns="False"
                             CssClass="table table-bordered table-striped table-hover"
@@ -44,7 +53,11 @@
                             DataKeyNames="SubjectCode,VersionCode,QuestionNo"
                             EmptyDataText="No objection details added yet."
                             GridLines="None"
-                            Width="100%">
+                            Width="100%"
+                            AllowPaging="True"
+                            AllowCustomPaging="True"
+                            PageSize="50"
+                            OnPageIndexChanging="gvObjections_PageIndexChanging">
 
                             <Columns>
                                 <asp:BoundField DataField="ExamDesc"

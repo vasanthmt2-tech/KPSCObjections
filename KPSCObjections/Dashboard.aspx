@@ -1,4 +1,4 @@
-<%@ Page Title="Dashboard" Language="C#" MasterPageFile="~/Admin.Master" AutoEventWireup="true" CodeBehind="Dashboard.aspx.cs" Inherits="KPSCObjections.Dashboard" %>
+<%@ Page Title="Dashboard - Answer Key Objection Portal" Language="C#" MasterPageFile="~/Admin.Master" AutoEventWireup="true" CodeBehind="Dashboard.aspx.cs" Inherits="KPSCObjections.Dashboard" %>
 <asp:Content ID="Content1" ContentPlaceHolderID="MainContent" runat="server">
 
     <style>
@@ -21,7 +21,7 @@
     <div class="container-fluid px-4 mt-4 mb-5">
 
         <div class="d-flex flex-wrap align-items-center gap-3 mb-1">
-            <h3 class="mb-0 me-auto">Dashboard</h3>
+            <h2 class="h3 mb-0 me-auto">Dashboard</h2>
 
             <asp:Panel ID="pnlExam" runat="server" CssClass="d-flex align-items-center gap-2">
                 <label class="form-label mb-0" for="<%= ddlExam.ClientID %>">Examination</label>

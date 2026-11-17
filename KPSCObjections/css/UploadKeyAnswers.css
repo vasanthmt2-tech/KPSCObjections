@@ -14,7 +14,7 @@
     }
 
 .required {
-    color: red;
+    color: #c00000;
 }
 
 .candidate-body {

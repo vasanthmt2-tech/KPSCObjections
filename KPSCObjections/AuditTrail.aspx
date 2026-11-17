@@ -1,9 +1,9 @@
-<%@ Page Title="Audit Trail" Language="C#" MasterPageFile="~/Admin.Master" AutoEventWireup="true" CodeBehind="AuditTrail.aspx.cs" Inherits="KPSCObjections.AuditTrail" %>
+<%@ Page Title="Audit Trail - Answer Key Objection Portal" Language="C#" MasterPageFile="~/Admin.Master" AutoEventWireup="true" CodeBehind="AuditTrail.aspx.cs" Inherits="KPSCObjections.AuditTrail" %>
 <asp:Content ID="Content1" ContentPlaceHolderID="MainContent" runat="server">
 
     <div class="container mt-4 mb-5">
 
-        <h3>Audit Trail</h3>
+        <h2 class="h3">Audit Trail</h2>
         <p class="text-muted">
             Actions of admins: sign-ins (and failed ones), uploads, deletes, downloads,
             objection window changes and payment re-checks. Entries cannot be changed or deleted.

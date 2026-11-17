@@ -1,6 +1,6 @@
-﻿<%@ Page Title="" Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeBehind="Objection.aspx.cs" Inherits="KPSCObjections.Objection" %>
+﻿<%@ Page Title="File Objection - Answer Key Objection Portal" Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeBehind="Objection.aspx.cs" Inherits="KPSCObjections.Objection" %>
 <asp:Content ID="Content1" ContentPlaceHolderID="MainContent" runat="server">
-     <link href="css/Objection.css" rel="stylesheet" />
+     <link href="css/Objection.css?v=2" rel="stylesheet" />
     <div class="candidate-panel">
 
         <script type="text/javascript">
@@ -161,7 +161,7 @@
                         
                          <%-- Version Code --%>
                         <div class="field-group">
-                            <label class="form-label" for="<%= ddlVersionCode.ClientID %>"> Version Code <span class="required">*</span></label>
+                            <label class="form-label" for="<%= ddlVersionCode.ClientID %>"> Version Code</label>
 
                             <asp:DropDownList ID="ddlVersionCode" runat="server" CssClass="form-select" Enabled="false">
                                <%-- <asp:ListItem Text="A" Value="A" />
@@ -193,7 +193,7 @@
                         </div>
                         <%-- File Upload --%>
                         <div class="field-group">
-                            <label class="form-label" for="<%= fileDocs.ClientID %>">Supporting Document <span class="text-muted">(optional; pdf only, less than 1 MB)</span></label>
+                            <label class="form-label" for="<%= fileDocs.ClientID %>">Supporting Document <span class="text-muted">(optional; PDF only, up to 1 MB)</span></label>
                             <asp:FileUpload ID="fileDocs" runat="server" CssClass="form-select">
                               <%--  <asp:ListItem Text="570" Value="570" />
                                 <asp:ListItem Text="571" Value="571" />

@@ -14,6 +14,10 @@ namespace KPSCObjections.Security
         {
             if (!AuthSession.IsCandidate(Context))
             {
+                // Read before SignOut: a sign-in cookie without a valid session
+                // means the session ended, and the login page says so.
+                bool expired = AuthSession.HadSignIn(Context);
+
                 // A signed-in admin who opens a candidate page keeps the admin
                 // sign-in; otherwise a link to a candidate page (from any site)
                 // could sign an admin out. An invalid session was already
@@ -21,7 +25,7 @@ namespace KPSCObjections.Security
                 if (!AuthSession.IsAdmin(Context))
                     AuthSession.SignOut(Context);
 
-                Response.Redirect("~/Login.aspx", true);
+                Response.Redirect(expired ? "~/Login.aspx?expired=1" : "~/Login.aspx", true);
             }
 
             NoStore(Response);
@@ -47,6 +51,8 @@ namespace KPSCObjections.Security
         {
             if (!AuthSession.IsAdmin(Context))
             {
+                bool expired = AuthSession.HadSignIn(Context);
+
                 // A signed-in candidate who opens an admin page keeps the
                 // candidate sign-in; otherwise a link to an admin page (from any
                 // site) could sign a candidate out. An invalid session was
@@ -54,7 +60,7 @@ namespace KPSCObjections.Security
                 if (!AuthSession.IsCandidate(Context))
                     AuthSession.SignOut(Context);
 
-                Response.Redirect("~/AdminLogin.aspx", true);
+                Response.Redirect(expired ? "~/AdminLogin.aspx?expired=1" : "~/AdminLogin.aspx", true);
             }
 
             CandidatePage.NoStore(Response);

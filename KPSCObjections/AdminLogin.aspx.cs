@@ -16,8 +16,15 @@ namespace KPSCObjections
 
             ApplyTestMode();
 
-            if (!IsPostBack && !TestMode.CaptchaDisabled)
-                RefreshCaptcha();
+            if (!IsPostBack)
+            {
+                if (!TestMode.CaptchaDisabled)
+                    RefreshCaptcha();
+
+                // Sent here by an admin page whose session had ended.
+                if (Request.QueryString["expired"] == "1")
+                    Alert(KPSCObjections.Login.SessionEndedMessage);
+            }
         }
 
         /// <summary>

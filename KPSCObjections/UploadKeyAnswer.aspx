@@ -1,14 +1,14 @@
-﻿<%@ Page Title="" Language="C#" MasterPageFile="~/Admin.Master" AutoEventWireup="true" CodeBehind="UploadKeyAnswer.aspx.cs" Inherits="KPSCObjections.UploadKeyAnswer" %>
+﻿<%@ Page Title="Upload Key Answers - Answer Key Objection Portal" Language="C#" MasterPageFile="~/Admin.Master" AutoEventWireup="true" CodeBehind="UploadKeyAnswer.aspx.cs" Inherits="KPSCObjections.UploadKeyAnswer" %>
 <asp:Content ID="Content1"
     ContentPlaceHolderID="MainContent"
     runat="server">
 
     <div class="container mt-4">
 
-        <h3>Upload Key Answers</h3>
+        <h2 class="h3">Upload Key Answers</h2>
 
         <div class="form-group mb-3">
-            <label>Exam Code</label>
+            <label for="<%= ddlExamCode.ClientID %>">Examination</label>
             <asp:DropDownList ID="ddlExamCode"
                 runat="server"
                 CssClass="form-control"
@@ -18,7 +18,7 @@
         </div>
 
         <div class="form-group mb-3">
-            <label>Subject Code</label>
+            <label for="<%= ddlSubjectCode.ClientID %>">Subject Code</label>
             <asp:DropDownList ID="ddlSubjectCode"
                 runat="server"
                 CssClass="form-control">
@@ -26,7 +26,7 @@
         </div>
 
         <div class="form-group mb-3">
-            <label>Select Excel File (.xlsx)</label>
+            <label for="<%= fuKeyAnswers.ClientID %>">Select Excel File (.xlsx)</label>
             <asp:FileUpload ID="fuKeyAnswers"
                 runat="server"
                 CssClass="form-control"
@@ -47,7 +47,7 @@
 
         <hr />
 
-        <h4 class="mt-4">Uploaded Key Answer Documents</h4>
+        <h3 class="h4 mt-4">Uploaded Key Answer Documents</h3>
 
         <%-- Scrolls inside its own box on narrow screens. --%>
         <div class="table-responsive">

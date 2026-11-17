@@ -1,9 +1,9 @@
-﻿<%@ Page Title="" Language="C#" MasterPageFile="~/Admin.Master" AutoEventWireup="true" CodeBehind="AdminLogin.aspx.cs" Inherits="KPSCObjections.AdminLogin" %>
+﻿<%@ Page Title="Admin Login - Answer Key Objection Portal" Language="C#" MasterPageFile="~/Admin.Master" AutoEventWireup="true" CodeBehind="AdminLogin.aspx.cs" Inherits="KPSCObjections.AdminLogin" %>
 <asp:Content ID="Content1" ContentPlaceHolderID="HeadContent" runat="server">
     
 </asp:Content>
 <asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="server">
-    <link href="css/Login.css" rel="stylesheet" />
+    <link href="css/Login.css?v=2" rel="stylesheet" />
     <div class="login-page">
 
         <div class="login-panel">

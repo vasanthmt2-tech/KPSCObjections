@@ -37,14 +37,19 @@ namespace KPSCObjections
         private const string IsPending = "p.PaymentStatus = 'PENDING'";
         private const string IsNotPaid = "(p.PaymentId IS NULL OR p.PaymentStatus NOT IN ('SUCCESS', 'PENDING'))";
 
-        // The master question (and its key answer) for an objection's version question number.
+        // The master question (and its key answer) for an objection's version
+        // question number. An equality join on the examination's key map
+        // (Security\KeySets.cs), not a lookup per objection: with tens of
+        // thousands of objections the per-row lookup took about 30 seconds.
         private static readonly string MasterQuestion = @"
-            OUTER APPLY (
-                SELECT TOP 1 KA.QuestionNo, KA.MasterAnswer
-                FROM dbo.KeyAnswers KA
-                WHERE KA.ExamCode = @ExamCode AND KA.SubjectCode = o.PaperCode
-                  AND LTRIM(RTRIM(" + KeySets.QuestionColumnSql("KA", "o.VersionCode", false) + @")) = CAST(o.QuestionNo AS varchar(20))
-                ORDER BY KA.QuestionNo) m";
+            LEFT JOIN (
+                SELECT SubjectCode, VersionCode, VersionQuestionNo,
+                       MasterQuestionNo AS QuestionNo, MasterAnswer
+                FROM " + KeySets.MasterMapSql("@ExamCode") + @" map
+            ) m
+                ON m.SubjectCode = o.PaperCode
+               AND m.VersionCode = o.VersionCode
+               AND m.VersionQuestionNo = o.QuestionNo";
 
         // A key that is the same for one question across all versions.
         private const string QuestionKey =

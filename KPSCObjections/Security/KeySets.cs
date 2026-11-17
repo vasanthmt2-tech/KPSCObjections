@@ -53,6 +53,46 @@ namespace KPSCObjections.Security
         }
 
         /// <summary>
+        /// SQL for a derived table that maps each version's question number to
+        /// the master question, one row per (SubjectCode, VersionCode,
+        /// VersionQuestionNo), with MasterQuestionNo and MasterAnswer. For
+        /// joining many objections at once: an equality join on this small
+        /// table is far cheaper than evaluating a CASE over the Set columns for
+        /// every objection. <paramref name="examParam"/> is the SQL parameter
+        /// holding the examination code, or null for every examination (the
+        /// map then also has ExamCode, to join on). When a key file maps one
+        /// version question number to several master questions, the lowest is
+        /// used.
+        /// </summary>
+        public static string MasterMapSql(string examParam)
+        {
+            StringBuilder values = new StringBuilder();
+
+            for (int i = 0; i < Count; i++)
+            {
+                if (i > 0)
+                    values.Append(", ");
+
+                values.Append("('").Append((char)('A' + i)).Append("', ka.").Append(Columns[i]).Append("), ")
+                      .Append("('").Append((char)('M' + i)).Append("', ka.").Append(Columns[i]).Append(")");
+            }
+
+            return @"(
+                SELECT ExamCode, SubjectCode, VersionCode, VersionQuestionNo, MasterQuestionNo, MasterAnswer
+                FROM (
+                    SELECT ka.ExamCode, ka.SubjectCode, v.VersionCode,
+                           TRY_CONVERT(INT, LTRIM(RTRIM(v.Q))) AS VersionQuestionNo,
+                           ka.QuestionNo AS MasterQuestionNo, ka.MasterAnswer,
+                           ROW_NUMBER() OVER (PARTITION BY ka.ExamCode, ka.SubjectCode, v.VersionCode, TRY_CONVERT(INT, LTRIM(RTRIM(v.Q)))
+                                              ORDER BY ka.QuestionNo) AS Rn
+                    FROM dbo.KeyAnswers ka
+                    CROSS APPLY (VALUES " + values + @") v(VersionCode, Q)
+                    WHERE " + (examParam == null ? "" : "ka.ExamCode = " + examParam + " AND ") + @"v.Q IS NOT NULL
+                ) x
+                WHERE Rn = 1 AND VersionQuestionNo IS NOT NULL)";
+        }
+
+        /// <summary>
         /// SQL expression for the question number of a dbo.KeyAnswers row in
         /// the version given by <paramref name="versionExpr"/>: A or M reads
         /// Set1, B or N reads Set2, and so on up to L or X reading Set12.

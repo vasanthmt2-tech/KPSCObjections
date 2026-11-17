@@ -25,23 +25,117 @@ namespace KPSCObjections
             }
         }
 
+        // Only objections whose payment is confirmed count as submitted. The
+        // paper's name and the examination come from the candidate's own
+        // examination: paper codes (P1, P2) repeat in every examination.
+        private const string DetailsFrom = @"
+            FROM dbo.Objections o
+            INNER JOIN dbo.PaymentTransactions p ON p.PaymentId = o.PaymentId AND p.PaymentStatus = 'SUCCESS'
+            INNER JOIN dbo.Candidate c ON c.RegNo = o.RegNo
+            LEFT JOIN dbo.ObjectionsDocument d ON d.RegNo = o.RegNo AND d.PaperCode = o.PaperCode AND d.QuestionNo = o.QuestionNo
+            LEFT JOIN dbo.Exam e ON e.ExamCode = c.ExamCode
+            LEFT JOIN dbo.Subject s ON s.PaperCode = o.PaperCode AND s.ExamCode = c.ExamCode";
+
+        private const string DetailsColumns = @"
+            SELECT ISNULL(e.ExamDescription, c.ExamCode) AS ExamDesc,
+                   o.PaperCode AS SubjectCode, s.SubjectDescription AS SubjectDesc, o.RegNo, o.VersionCode, o.QuestionNo,
+                   o.KeyAnswer, o.ObjectionAnswer, o.Remarks, d.FileName AS SupportingDocument,
+                   ISNULL(p.SBIReferenceNo, p.MerchantOrderNo) AS TransactionID,
+                   CONVERT(varchar(10), ISNULL(p.PaymentDate, p.CreatedDate), 103) AS SubmittedDate";
+
+        private const string DetailsOrder = " ORDER BY c.ExamCode, o.PaperCode, o.QuestionNo, o.RegNo";
+
+        /// <summary>
+        /// Shows one page (50 rows) of the objection details. Only that page is
+        /// read and kept in the page's ViewState: with tens of thousands of
+        /// objections the whole list made a 20 MB page that could not be
+        /// posted back. The full list is in Download all as Excel.
+        /// </summary>
         public void LoadObjectionDetails()
         {
-            // Only objections whose payment is confirmed count as submitted.
-            // The paper's name and the examination come from the candidate's
-            // own examination: paper codes (P1, P2) repeat in every examination.
-            DataTable dt = sh.ExecuteDataTable(@"SELECT ISNULL(e.ExamDescription, c.ExamCode) AS ExamDesc,
-                            o.PaperCode as SubjectCode, s.SubjectDescription as SubjectDesc,o.RegNo,o.VersionCode,o.QuestionNo,o.KeyAnswer,o.ObjectionAnswer,o.Remarks, d.FileName as SupportingDocument,
-                            ISNULL(p.SBIReferenceNo, p.MerchantOrderNo) as TransactionID,CONVERT(varchar(10), ISNULL(p.PaymentDate, p.CreatedDate),103) SubmittedDate FROM Objections o
-                            inner join PaymentTransactions p on p.PaymentId = o.PaymentId and p.PaymentStatus = 'SUCCESS'
-                            inner join ObjectionsDocument d on o.regno = d.regno and o.PaperCode = d.PaperCode and o.QuestionNo = d.QuestionNo
-                            inner join Candidate c on c.RegNo = o.RegNo
-                            left outer join Exam e on e.ExamCode = c.ExamCode
-                            left outer join Subject s on s.PaperCode = o.PaperCode and s.ExamCode = c.ExamCode
-                            order by c.ExamCode, o.PaperCode, o.QuestionNo, o.RegNo");
+            int total = Convert.ToInt32(sh.ExecuteScalar("SELECT COUNT(*) " + DetailsFrom));
+            int pages = Math.Max(1, (total + gvObjections.PageSize - 1) / gvObjections.PageSize);
 
+            if (gvObjections.PageIndex >= pages)
+                gvObjections.PageIndex = pages - 1;
+
+            int skip = gvObjections.PageIndex * gvObjections.PageSize;
+
+            DataTable dt = sh.ExecuteDataTable(
+                DetailsColumns + DetailsFrom + DetailsOrder +
+                " OFFSET @Skip ROWS FETCH NEXT @Take ROWS ONLY",
+                new SqlParameter("@Skip", SqlDbType.Int) { Value = skip },
+                new SqlParameter("@Take", SqlDbType.Int) { Value = gvObjections.PageSize });
+
+            gvObjections.VirtualItemCount = total;
             gvObjections.DataSource = dt;
             gvObjections.DataBind();
+
+            lblDetailsCount.Text = HttpUtility.HtmlEncode(total == 0
+                ? "No submitted objections."
+                : total.ToString("N0") + " submitted objection" + (total == 1 ? "" : "s") +
+                  (total > gvObjections.PageSize
+                      ? ", showing " + (skip + 1).ToString("N0") + " to " + (skip + dt.Rows.Count).ToString("N0")
+                      : "") + ".");
+            btnDetailsExcel.Visible = total > 0;
+        }
+
+        protected void gvObjections_PageIndexChanging(object sender, GridViewPageEventArgs e)
+        {
+            gvObjections.PageIndex = e.NewPageIndex;
+            LoadObjectionDetails();
+            SetActiveButton("Details");
+        }
+
+        /// <summary>Every submitted objection, all examinations, as one Excel file.</summary>
+        protected void btnDetailsExcel_Click(object sender, EventArgs e)
+        {
+            DataTable dt = sh.ExecuteDataTable(DetailsColumns + DetailsFrom + DetailsOrder);
+
+            AdminAudit.Record(Context, AdminAudit.DownloadObjectionsExcel,
+                "All objection details: " + dt.Rows.Count + " objections");
+
+            string[] headers = { "Examination", "Paper", "Subject", "Reg. No.", "Version", "Question No.", "Key Answer",
+                                 "Objection Answer", "Remarks", "Document", "Transaction Id", "Submitted Date" };
+            string[] columns = { "ExamDesc", "SubjectCode", "SubjectDesc", "RegNo", "VersionCode", "QuestionNo", "KeyAnswer",
+                                 "ObjectionAnswer", "Remarks", "SupportingDocument", "TransactionID", "SubmittedDate" };
+
+            using (ClosedXML.Excel.XLWorkbook workbook = new ClosedXML.Excel.XLWorkbook())
+            using (MemoryStream ms = new MemoryStream())
+            {
+                ClosedXML.Excel.IXLWorksheet sheet = workbook.Worksheets.Add("Objections");
+
+                for (int c = 0; c < headers.Length; c++)
+                {
+                    sheet.Cell(1, c + 1).SetValue(headers[c]);
+                    sheet.Cell(1, c + 1).Style.Font.Bold = true;
+                }
+
+                // Every value is written as text, so nothing a candidate typed can run as a formula.
+                for (int r = 0; r < dt.Rows.Count; r++)
+                {
+                    for (int c = 0; c < columns.Length; c++)
+                        sheet.Cell(r + 2, c + 1).SetValue(Convert.ToString(dt.Rows[r][columns[c]]));
+                }
+
+                sheet.SheetView.FreezeRows(1);
+                sheet.Columns().Width = 16;
+                sheet.Column(9).Width = 60;
+
+                workbook.SaveAs(ms);
+
+                Response.Clear();
+                Response.Buffer = true;
+                Response.ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+                Response.AddHeader("Content-Disposition",
+                    "attachment;filename=ObjectionDetails_All_" + DateTime.Now.ToString("yyyyMMdd_HHmm", System.Globalization.CultureInfo.InvariantCulture) + ".xlsx");
+                Response.BinaryWrite(ms.ToArray());
+                Response.Flush();
+
+                // Stop the page's own HTML being appended to the downloaded file.
+                Response.SuppressContent = true;
+                Context.ApplicationInstance.CompleteRequest();
+            }
         }
 
         private void BindObjectionSummary()
@@ -77,11 +171,16 @@ LEFT JOIN dbo.Subject s
     ON s.PaperCode = o.PaperCode
     AND s.ExamCode = c.ExamCode
 
-INNER JOIN dbo.KeyAnswers ka
+-- Equality join on the key map (Security\KeySets.cs): a CASE over the Set
+-- columns for every objection took about 15 seconds for 40,000 objections.
+INNER JOIN (
+    SELECT ExamCode, SubjectCode, VersionCode, VersionQuestionNo, MasterQuestionNo AS QuestionNo
+    FROM " + KeySets.MasterMapSql(null) + @" map
+) ka
     ON ka.ExamCode = c.ExamCode
     AND ka.SubjectCode = o.PaperCode
-    AND o.QuestionNo =
-        " + KeySets.QuestionColumnSql("ka", "o.VersionCode", true) + @"
+    AND ka.VersionCode = o.VersionCode
+    AND ka.VersionQuestionNo = o.QuestionNo
 
 GROUP BY
     c.ExamCode,

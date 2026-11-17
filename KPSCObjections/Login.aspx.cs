@@ -62,6 +62,10 @@ namespace KPSCObjections
 
                 if (!TestMode.CaptchaDisabled)
                     RefreshCaptcha();
+
+                // Sent here by a candidate page whose session had ended.
+                if (Request.QueryString["expired"] == "1")
+                    ShowError(SessionEndedMessage);
             }
         }
 
@@ -761,6 +765,11 @@ namespace KPSCObjections
         // ---------------------------------------------------------------
         // Messages
         // ---------------------------------------------------------------
+
+        /// <summary>Shown on the login pages after a session has ended.</summary>
+        internal const string SessionEndedMessage =
+            "Your session has ended (no activity for some time, or you signed in elsewhere). " +
+            "Please log in again; anything not yet added was not saved.";
 
         private void ShowError(string message)
         {

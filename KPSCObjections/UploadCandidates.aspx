@@ -1,14 +1,14 @@
-﻿<%@ Page Title="" Language="C#" MasterPageFile="~/Admin.Master" AutoEventWireup="true" CodeBehind="UploadCandidates.aspx.cs" Inherits="KPSCObjections.UploadCandidates" %>
+﻿<%@ Page Title="Upload Candidates - Answer Key Objection Portal" Language="C#" MasterPageFile="~/Admin.Master" AutoEventWireup="true" CodeBehind="UploadCandidates.aspx.cs" Inherits="KPSCObjections.UploadCandidates" %>
 <asp:Content ID="Content1"
     ContentPlaceHolderID="MainContent"
     runat="server">
 
     <div class="container mt-4">
 
-        <h3>Upload Candidates</h3>
+        <h2 class="h3">Upload Candidates</h2>
 
         <div class="form-group mb-3">
-            <label>Examination</label>
+            <label for="<%= ddlExamCode.ClientID %>">Examination</label>
             <asp:DropDownList ID="ddlExamCode"
                 runat="server"
                 CssClass="form-control"
@@ -18,7 +18,7 @@
         </div>
 
         <div class="form-group mb-3">
-            <label>Select Excel File (.xlsx)</label>
+            <label for="<%= fuCandidates.ClientID %>">Select Excel File (.xlsx)</label>
             <asp:FileUpload ID="fuCandidates"
                 runat="server"
                 CssClass="form-control"
@@ -27,7 +27,7 @@
                 First sheet, with these seven columns in this order in row 1:
                 <strong>Applno, RegNo, Name, Dob, MobileNo, P1VersionCode, P2VersionCode</strong>.
                 RegNo: up to 10 letters or digits. MobileNo: 10 digits.
-                P1VersionCode: one letter A to L. P2VersionCode: one letter M to X. Maximum file size 5 MB.
+                P1VersionCode: one letter A to L. P2VersionCode: one letter M to X. Maximum file size 5 MB (about 130,000 candidates); split a longer list into several files.
             </small>
         </div>
 
@@ -45,7 +45,7 @@
 
         <hr />
 
-        <h4 class="mt-4">Candidates</h4>
+        <h3 class="h4 mt-4">Candidates</h3>
 
         <%-- Shown once an examination is selected --%>
         <asp:Panel ID="pnlCandidates" runat="server" Visible="false">
