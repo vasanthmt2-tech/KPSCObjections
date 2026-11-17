@@ -7,9 +7,11 @@ namespace KPSCObjections.Security
     /// kept in dbo.KeyAnswers.
     ///
     /// Paper P1 has sets A to L and paper P2 has sets M to X. Each paper has
-    /// 12 sets, so dbo.KeyAnswers keeps 12 columns, SetA to SetL, by position:
-    /// for P1 the column SetA holds set A, and for P2 it holds set M (SetB
-    /// holds N, and so on up to SetL holding X).
+    /// 12 sets, so dbo.KeyAnswers keeps 12 columns, Set1 to Set12, by
+    /// position: for P1 the column Set1 holds set A, and for P2 it holds set
+    /// M (Set2 holds B or N, and so on up to Set12 holding L or X).
+    /// Database\migrations\005_KeyAnswerSetNumbers.sql renamed them from
+    /// SetA..SetL.
     /// </summary>
     public static class KeySets
     {
@@ -17,8 +19,8 @@ namespace KPSCObjections.Security
 
         private static readonly string[] Columns =
         {
-            "SetA", "SetB", "SetC", "SetD", "SetE", "SetF",
-            "SetG", "SetH", "SetI", "SetJ", "SetK", "SetL"
+            "Set1", "Set2", "Set3", "Set4", "Set5", "Set6",
+            "Set7", "Set8", "Set9", "Set10", "Set11", "Set12"
         };
 
         /// <summary>The first set letter of a paper: A for P1, M for P2.</summary>
@@ -53,8 +55,9 @@ namespace KPSCObjections.Security
         /// <summary>
         /// SQL expression for the question number of a dbo.KeyAnswers row in
         /// the version given by <paramref name="versionExpr"/>: A or M reads
-        /// SetA, B or N reads SetB, and so on. With <paramref name="asInt"/>
-        /// the value is converted to INT (NULL when it is not a number).
+        /// Set1, B or N reads Set2, and so on up to L or X reading Set12.
+        /// With <paramref name="asInt"/> the value is converted to INT (NULL
+        /// when it is not a number).
         /// </summary>
         public static string QuestionColumnSql(string tableAlias, string versionExpr, bool asInt)
         {

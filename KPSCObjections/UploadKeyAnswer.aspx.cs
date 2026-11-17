@@ -395,9 +395,9 @@ namespace KPSCObjections
                                     SubjectCode,
                                     QuestionNo,
                                     MasterAnswer,
-                                    SetA, SetB, SetC, SetD,
-                                    SetE, SetF, SetG, SetH,
-                                    SetI, SetJ, SetK, SetL
+                                    Set1, Set2, Set3, Set4,
+                                    Set5, Set6, Set7, Set8,
+                                    Set9, Set10, Set11, Set12
                                 )
                                 VALUES
                                 (
@@ -405,9 +405,9 @@ namespace KPSCObjections
                                     @SubjectCode,
                                     @QuestionNo,
                                     @MasterAnswer,
-                                    @SetA, @SetB, @SetC, @SetD,
-                                    @SetE, @SetF, @SetG, @SetH,
-                                    @SetI, @SetJ, @SetK, @SetL
+                                    @Set1, @Set2, @Set3, @Set4,
+                                    @Set5, @Set6, @Set7, @Set8,
+                                    @Set9, @Set10, @Set11, @Set12
                                 )";
 
                             using (SqlCommand cmd =
@@ -430,16 +430,17 @@ namespace KPSCObjections
                                     "@MasterAnswer",
                                     SqlDbType.Int);
 
-                                // Stored by position: for P2, Set M goes
-                                // into SetA, Set N into SetB, and so on.
+                                // Stored by position: the file's first set
+                                // column (Set A for P1, Set M for P2) goes
+                                // into Set1, the next into Set2, and so on.
                                 string[] setNames =
                                 {
-                                    "@SetA", "@SetB",
-                                    "@SetC", "@SetD",
-                                    "@SetE", "@SetF",
-                                    "@SetG", "@SetH",
-                                    "@SetI", "@SetJ",
-                                    "@SetK", "@SetL"
+                                    "@Set1", "@Set2",
+                                    "@Set3", "@Set4",
+                                    "@Set5", "@Set6",
+                                    "@Set7", "@Set8",
+                                    "@Set9", "@Set10",
+                                    "@Set11", "@Set12"
                                 };
 
                                 foreach (string setName in setNames)

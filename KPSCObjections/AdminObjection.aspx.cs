@@ -43,7 +43,7 @@ namespace KPSCObjections
         {
             // One row per MASTER question. An objection stores the question
             // number as printed in the candidate's own version, so it is mapped
-            // back through that version's Set column (SetA..SetL, see Security\KeySets.cs) to the master
+            // back through that version's Set column (Set1..Set12, see Security\KeySets.cs) to the master
             // question. The Excel and ZIP downloads below take this master
             // question number and apply the same mapping.
             DataTable dt = sh.ExecuteDataTable(@"SELECT
