@@ -664,12 +664,7 @@ namespace KPSCObjections
                 @"SELECT TOP 1 KA.MasterAnswer
                   FROM dbo.KeyAnswers KA
                   WHERE KA.ExamCode = @ExamCode AND KA.SubjectCode = @PaperCode
-                    AND CASE @VersionCode
-                            WHEN 'A' THEN KA.SetA WHEN 'B' THEN KA.SetB WHEN 'C' THEN KA.SetC
-                            WHEN 'D' THEN KA.SetD WHEN 'E' THEN KA.SetE WHEN 'F' THEN KA.SetF
-                            WHEN 'G' THEN KA.SetG WHEN 'H' THEN KA.SetH WHEN 'I' THEN KA.SetI
-                            WHEN 'J' THEN KA.SetJ WHEN 'K' THEN KA.SetK WHEN 'L' THEN KA.SetL
-                        END = @QuestionNo",
+                    AND " + KeySets.QuestionColumnSql("KA", "@VersionCode", false) + @" = @QuestionNo",
                 new SqlParameter("@ExamCode", SqlDbType.VarChar, 5) { Value = ssen.ExamCode },
                 new SqlParameter("@PaperCode", SqlDbType.VarChar, 5) { Value = paperCode },
                 new SqlParameter("@VersionCode", SqlDbType.VarChar, 1) { Value = versionCode },

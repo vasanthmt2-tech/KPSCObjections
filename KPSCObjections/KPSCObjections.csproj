@@ -365,6 +365,7 @@
     <Compile Include="Security\AdminAudit.cs" />
     <Compile Include="Security\AdminAuth.cs" />
     <Compile Include="Security\AuthSession.cs" />
+    <Compile Include="Security\KeySets.cs" />
     <Compile Include="Security\AppLog.cs" />
     <Compile Include="Security\DocumentReferences.cs" />
     <Compile Include="Security\EncryptedForms.cs" />

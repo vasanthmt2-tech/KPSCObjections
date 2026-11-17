@@ -27,7 +27,7 @@
                 First sheet, with these seven columns in this order in row 1:
                 <strong>Applno, RegNo, Name, Dob, MobileNo, P1VersionCode, P2VersionCode</strong>.
                 RegNo: up to 10 letters or digits. MobileNo: 10 digits.
-                Version codes: one letter A to L. Maximum file size 5 MB.
+                P1VersionCode: one letter A to L. P2VersionCode: one letter M to X. Maximum file size 5 MB.
             </small>
         </div>
 

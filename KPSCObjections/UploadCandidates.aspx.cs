@@ -40,7 +40,6 @@ namespace KPSCObjections
 
         private static readonly Regex RegNoPattern = new Regex(@"^[A-Za-z0-9]{1,10}$");
         private static readonly Regex MobilePattern = new Regex(@"^\d{10}$");
-        private static readonly Regex VersionPattern = new Regex(@"^[A-L]$");
 
         // Accepted spellings of each header, compared without spaces, dots or case.
         private static readonly string[][] Headers =
@@ -344,11 +343,12 @@ namespace KPSCObjections
                     if (!MobilePattern.IsMatch(mobile))
                         errors.Add(RowError(row, "MobileNo must be exactly 10 digits."));
 
-                    if (!VersionPattern.IsMatch(p1))
-                        errors.Add(RowError(row, "P1VersionCode must be one letter A to L."));
+                    // P1 has sets A to L and P2 has sets M to X (Security\KeySets.cs).
+                    if (!KeySets.IsValid("P1", p1))
+                        errors.Add(RowError(row, "P1VersionCode must be one letter " + KeySets.Range("P1") + "."));
 
-                    if (p2.Length == 0 ? secondPaperRequired : !VersionPattern.IsMatch(p2))
-                        errors.Add(RowError(row, "P2VersionCode must be one letter A to L."));
+                    if (p2.Length == 0 ? secondPaperRequired : !KeySets.IsValid("P2", p2))
+                        errors.Add(RowError(row, "P2VersionCode must be one letter " + KeySets.Range("P2") + "."));
 
                     if (errors.Count == before)
                     {

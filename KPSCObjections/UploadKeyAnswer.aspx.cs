@@ -184,25 +184,19 @@ namespace KPSCObjections
                     IXLWorksheet worksheet =
                         workbook.Worksheet(1);
 
-                    // Expected 14 columns
+                    // Expected 14 columns: master question number, key
+                    // answer and the 12 sets of the paper (P1: Set A to
+                    // Set L, P2: Set M to Set X; see Security\KeySets.cs).
 
-                    string[] expectedHeaders =
+                    string[] expectedHeaders = new string[14];
+                    expectedHeaders[0] = "M";
+                    expectedHeaders[1] = "Key Answer";
+
+                    for (int i = 0; i < KeySets.Count; i++)
                     {
-                        "M",
-                        "Key Answer",
-                        "Set A",
-                        "Set B",
-                        "Set C",
-                        "Set D",
-                        "Set E",
-                        "Set F",
-                        "Set G",
-                        "Set H",
-                        "Set I",
-                        "Set J",
-                        "Set K",
-                        "Set L"
-                    };
+                        expectedHeaders[i + 2] =
+                            "Set " + KeySets.Letter(subjectCode, i);
+                    }
 
                     // 5. Validate Excel Headers
 
@@ -222,7 +216,9 @@ namespace KPSCObjections
                             ShowMessage(
                                 "Invalid Excel header in column " +
                                 col + ". Expected: " +
-                                expectedHeaders[col - 1],
+                                expectedHeaders[col - 1] +
+                                " (paper " + subjectCode + " has sets " +
+                                KeySets.Range(subjectCode) + ")",
                                 false);
 
                             return;
@@ -434,6 +430,8 @@ namespace KPSCObjections
                                     "@MasterAnswer",
                                     SqlDbType.Int);
 
+                                // Stored by position: for P2, Set M goes
+                                // into SetA, Set N into SetB, and so on.
                                 string[] setNames =
                                 {
                                     "@SetA", "@SetB",

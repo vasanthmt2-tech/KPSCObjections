@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Web;
 using System.Web.UI.WebControls;
 using KPSCObjections.DLL;
+using KPSCObjections.Security;
 
 namespace KPSCObjections
 {
@@ -37,17 +38,12 @@ namespace KPSCObjections
         private const string IsNotPaid = "(p.PaymentId IS NULL OR p.PaymentStatus NOT IN ('SUCCESS', 'PENDING'))";
 
         // The master question (and its key answer) for an objection's version question number.
-        private const string MasterQuestion = @"
+        private static readonly string MasterQuestion = @"
             OUTER APPLY (
                 SELECT TOP 1 KA.QuestionNo, KA.MasterAnswer
                 FROM dbo.KeyAnswers KA
                 WHERE KA.ExamCode = @ExamCode AND KA.SubjectCode = o.PaperCode
-                  AND LTRIM(RTRIM(CASE o.VersionCode
-                        WHEN 'A' THEN KA.SetA WHEN 'B' THEN KA.SetB WHEN 'C' THEN KA.SetC
-                        WHEN 'D' THEN KA.SetD WHEN 'E' THEN KA.SetE WHEN 'F' THEN KA.SetF
-                        WHEN 'G' THEN KA.SetG WHEN 'H' THEN KA.SetH WHEN 'I' THEN KA.SetI
-                        WHEN 'J' THEN KA.SetJ WHEN 'K' THEN KA.SetK WHEN 'L' THEN KA.SetL
-                      END)) = CAST(o.QuestionNo AS varchar(20))
+                  AND LTRIM(RTRIM(" + KeySets.QuestionColumnSql("KA", "o.VersionCode", false) + @")) = CAST(o.QuestionNo AS varchar(20))
                 ORDER BY KA.QuestionNo) m";
 
         // A key that is the same for one question across all versions.

@@ -43,7 +43,7 @@ namespace KPSCObjections
         {
             // One row per MASTER question. An objection stores the question
             // number as printed in the candidate's own version, so it is mapped
-            // back through that version's Set column (SetA..SetL) to the master
+            // back through that version's Set column (SetA..SetL, see Security\KeySets.cs) to the master
             // question. The Excel and ZIP downloads below take this master
             // question number and apply the same mapping.
             DataTable dt = sh.ExecuteDataTable(@"SELECT
@@ -68,20 +68,7 @@ INNER JOIN dbo.KeyAnswers ka
     ON ka.ExamCode = c.ExamCode
     AND ka.SubjectCode = o.PaperCode
     AND o.QuestionNo =
-        CASE UPPER(LTRIM(RTRIM(o.VersionCode)))
-            WHEN 'A' THEN TRY_CONVERT(INT, ka.SetA)
-            WHEN 'B' THEN TRY_CONVERT(INT, ka.SetB)
-            WHEN 'C' THEN TRY_CONVERT(INT, ka.SetC)
-            WHEN 'D' THEN TRY_CONVERT(INT, ka.SetD)
-            WHEN 'E' THEN TRY_CONVERT(INT, ka.SetE)
-            WHEN 'F' THEN TRY_CONVERT(INT, ka.SetF)
-            WHEN 'G' THEN TRY_CONVERT(INT, ka.SetG)
-            WHEN 'H' THEN TRY_CONVERT(INT, ka.SetH)
-            WHEN 'I' THEN TRY_CONVERT(INT, ka.SetI)
-            WHEN 'J' THEN TRY_CONVERT(INT, ka.SetJ)
-            WHEN 'K' THEN TRY_CONVERT(INT, ka.SetK)
-            WHEN 'L' THEN TRY_CONVERT(INT, ka.SetL)
-        END
+        " + KeySets.QuestionColumnSql("ka", "o.VersionCode", true) + @"
 
 GROUP BY
     o.PaperCode,
@@ -133,20 +120,7 @@ INNER JOIN dbo.ObjectionsDocument d
    AND d.QuestionNo = o.QuestionNo
 WHERE o.PaperCode = @PaperCode
   AND o.QuestionNo =
-      CASE UPPER(LTRIM(RTRIM(o.VersionCode)))
-          WHEN 'A' THEN TRY_CONVERT(INT, ka.SetA)
-          WHEN 'B' THEN TRY_CONVERT(INT, ka.SetB)
-          WHEN 'C' THEN TRY_CONVERT(INT, ka.SetC)
-          WHEN 'D' THEN TRY_CONVERT(INT, ka.SetD)
-          WHEN 'E' THEN TRY_CONVERT(INT, ka.SetE)
-          WHEN 'F' THEN TRY_CONVERT(INT, ka.SetF)
-          WHEN 'G' THEN TRY_CONVERT(INT, ka.SetG)
-          WHEN 'H' THEN TRY_CONVERT(INT, ka.SetH)
-          WHEN 'I' THEN TRY_CONVERT(INT, ka.SetI)
-          WHEN 'J' THEN TRY_CONVERT(INT, ka.SetJ)
-          WHEN 'K' THEN TRY_CONVERT(INT, ka.SetK)
-          WHEN 'L' THEN TRY_CONVERT(INT, ka.SetL)
-      END
+      " + KeySets.QuestionColumnSql("ka", "o.VersionCode", true) + @"
 ORDER BY o.VersionCode;", "@PaperCode,@MasterQuestionNo", "@" + subjectCode + ",@" + questionNo))
                         {       
                             int count = 0;
@@ -351,20 +325,7 @@ INNER JOIN dbo.KeyAnswers ka
    AND ka.QuestionNo = @QuestionNo
 WHERE o.PaperCode = @PaperCode
   AND o.QuestionNo =
-      CASE UPPER(LTRIM(RTRIM(o.VersionCode)))
-          WHEN 'A' THEN TRY_CONVERT(INT, ka.SetA)
-          WHEN 'B' THEN TRY_CONVERT(INT, ka.SetB)
-          WHEN 'C' THEN TRY_CONVERT(INT, ka.SetC)
-          WHEN 'D' THEN TRY_CONVERT(INT, ka.SetD)
-          WHEN 'E' THEN TRY_CONVERT(INT, ka.SetE)
-          WHEN 'F' THEN TRY_CONVERT(INT, ka.SetF)
-          WHEN 'G' THEN TRY_CONVERT(INT, ka.SetG)
-          WHEN 'H' THEN TRY_CONVERT(INT, ka.SetH)
-          WHEN 'I' THEN TRY_CONVERT(INT, ka.SetI)
-          WHEN 'J' THEN TRY_CONVERT(INT, ka.SetJ)
-          WHEN 'K' THEN TRY_CONVERT(INT, ka.SetK)
-          WHEN 'L' THEN TRY_CONVERT(INT, ka.SetL)
-      END
+      " + KeySets.QuestionColumnSql("ka", "o.VersionCode", true) + @"
 ORDER BY s.SubjectCode, ka.QuestionNo, o.VersionCode;";
 
             string connectionString = System.Configuration.ConfigurationManager.ConnectionStrings["Objection_ConnectionString"].ConnectionString;
