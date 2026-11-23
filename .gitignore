@@ -20,12 +20,19 @@ PublishProfiles/*.pubxml.user
 # Local secrets - never commit. See the *.example files next to them.
 KPSCObjections/connectionStrings.config
 KPSCObjections/appSettings.secrets.config
+KPSCMarksObjection/connectionStrings.config
+KPSCMarksObjection/appSettings.secrets.config
 
 # Uploaded data
 KPSCObjections/UploadedKeyAnswers/
+KPSCMarksObjection/UploadedKeyAnswers/
+
+# Temporary test files
+**/ZzTestFiles/
 
 # Claude Code local settings
 .claude/settings.local.json
 
 # Application logs
 KPSCObjections/App_Data/logs/
+KPSCMarksObjection/App_Data/logs/

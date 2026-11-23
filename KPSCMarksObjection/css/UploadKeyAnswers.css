@@ -1,0 +1,22 @@
+﻿
+.upload-message {
+    display: block;
+    margin-bottom: 15px;
+    font-weight: 600;
+}
+
+    .upload-message.success {
+        color: #198754;
+    }
+
+    .upload-message.error {
+        color: #dc3545;
+    }
+
+.required {
+    color: #c00000;
+}
+
+.candidate-body {
+    padding: 20px;
+}
