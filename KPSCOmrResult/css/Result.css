@@ -1,0 +1,47 @@
+/* Candidate result page (Result.aspx), in the style of KPSC's result pages. */
+
+.result-page {
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+.result-title {
+    color: #006400;
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+}
+
+.result-status {
+    display: inline-block;
+    color: #c00000;
+    font-weight: 700;
+}
+
+.result-table th,
+.result-table td,
+.result-details th,
+.result-details td {
+    vertical-align: middle;
+}
+
+.result-details {
+    font-size: 0.85rem;
+}
+
+.result-link {
+    text-decoration: none;
+}
+
+.result-link:hover,
+.result-link:focus {
+    text-decoration: underline;
+}
+
+.result-regno {
+    color: #007a29;
+}
+
+.result-version {
+    color: #c03000;
+}

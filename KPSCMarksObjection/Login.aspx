@@ -15,6 +15,19 @@
                 <asp:Label ID="lblTestMode" runat="server" Visible="false"
                     CssClass="alert alert-danger d-block fw-bold py-2 mb-3" />
 
+                <%-- Examination --%>
+                <div class="field-group">
+                    <label class="form-label"
+                        for="<%= ddlExamination.ClientID %>">
+                        Select Examination<span class="required">*</span>
+                    </label>
+
+                    <asp:DropDownList ID="ddlExamination"
+                        runat="server"
+                        CssClass="form-select">
+                    </asp:DropDownList>
+                </div>
+
                 <%-- Registration Number --%>
                 <div class="field-group">
                     <label class="form-label"
@@ -29,19 +42,6 @@
                         CssClass="form-control" />
                 </div>
 
-                <%-- Examination --%>
-                <div class="field-group">
-                    <label class="form-label"
-                        for="<%= ddlExamination.ClientID %>">
-                        Select Examination<span class="required">*</span>
-                    </label>
-
-                    <asp:DropDownList ID="ddlExamination"
-                        runat="server"
-                        CssClass="form-select">
-                    </asp:DropDownList>
-                </div>
-
                 <%-- Date of Birth --%>
                 <div class="field-group">
                     <label class="form-label"
@@ -54,6 +54,7 @@
                         MaxLength="10"
                         autocomplete="bday"
                         inputmode="numeric"
+                        data-dob-mask="true"
                         CssClass="form-control"
                         placeholder="DD-MM-YYYY" />
                 </div>
@@ -109,4 +110,7 @@
         </div>
 
     </div>
+
+    <%-- Adds the dashes of DD-MM-YYYY while the date of birth is typed. --%>
+    <script src="<%: ResolveUrl("~/Scripts/dob-mask.js") %>"></script>
 </asp:Content>

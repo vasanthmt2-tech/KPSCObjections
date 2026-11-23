@@ -22,10 +22,13 @@ KPSCObjections/connectionStrings.config
 KPSCObjections/appSettings.secrets.config
 KPSCMarksObjection/connectionStrings.config
 KPSCMarksObjection/appSettings.secrets.config
+KPSCOmrResult/connectionStrings.config
+KPSCOmrResult/appSettings.secrets.config
 
 # Uploaded data
 KPSCObjections/UploadedKeyAnswers/
 KPSCMarksObjection/UploadedKeyAnswers/
+KPSCOmrResult/UploadedKeyAnswers/
 
 # Temporary test files
 **/ZzTestFiles/
@@ -36,3 +39,4 @@ KPSCMarksObjection/UploadedKeyAnswers/
 # Application logs
 KPSCObjections/App_Data/logs/
 KPSCMarksObjection/App_Data/logs/
+KPSCOmrResult/App_Data/logs/

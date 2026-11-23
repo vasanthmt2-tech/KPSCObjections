@@ -236,6 +236,7 @@
     <Content Include="Login.aspx" />
     <Content Include="MyObjections.aspx" />
     <Content Include="Objection.aspx" />
+    <Content Include="Scripts\dob-mask.js" />
     <Content Include="Scripts\form-encrypt.js" />
     <Content Include="Scripts\no-context-menu.js" />
     <Content Include="Scripts\postback-csp.js" />
