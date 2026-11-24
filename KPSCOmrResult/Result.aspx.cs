@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
@@ -108,17 +108,19 @@ namespace KPSCOmrResult
         private string BuildPopup(string modalId, DataRow r, string paper, string version, string[] answers)
         {
             Dictionary<int, string> key = KeyForVersion(paper, version);
-            int half = (answers.Length + 1) / 2;
+            // Questions are shown in blocks of 25 side by side: 1-25, 26-50, 51-75, 76-100.
+            const int rowsPerBlock = 25;
+            int blocks = Math.Max(1, (answers.Length + rowsPerBlock - 1) / rowsPerBlock);
             StringBuilder html = new StringBuilder();
 
-            html.Append("<div class=\"modal fade\" id=\"").Append(modalId)
+            html.Append("<div class=\"modal fade result-popup\" id=\"").Append(modalId)
                 .Append("\" tabindex=\"-1\" aria-labelledby=\"").Append(modalId).Append("Label\" aria-hidden=\"true\">")
-                .Append("<div class=\"modal-dialog modal-lg modal-dialog-scrollable\"><div class=\"modal-content\">")
+                .Append("<div class=\"modal-dialog modal-xl modal-dialog-scrollable\"><div class=\"modal-content\">")
                 .Append("<div class=\"modal-header\"><h5 class=\"modal-title fs-6\" id=\"").Append(modalId).Append("Label\">")
-                .Append("Key Answer &amp; Marked Answer Details &nbsp;&nbsp;<span>Name ").Append(Html(candidate.Name)).Append("</span>")
-                .Append(" &nbsp;&nbsp;<span class=\"result-regno\">Reg. No ").Append(Html(candidate.RegNo)).Append("</span>")
-                .Append(" &nbsp;&nbsp;<span class=\"result-version\">( ").Append(Html(Convert.ToString(r["SubjectDesc"])))
-                .Append(" - Question Paper Version ").Append(Html(version)).Append(" )</span></h5>")
+                .Append("Question-wise Marks &ndash; ").Append(Html(Convert.ToString(r["SubjectDesc"])))
+                .Append("<span class=\"result-popup-sub\">").Append(Html(candidate.Name))
+                .Append(" &middot; Reg. No. ").Append(Html(candidate.RegNo))
+                .Append(" &middot; Version ").Append(Html(version)).Append("</span></h5>")
                 .Append("<button type=\"button\" class=\"btn-close\" data-bs-dismiss=\"modal\" aria-label=\"Close\"></button></div>")
                 .Append("<div class=\"modal-body\">");
 
@@ -128,16 +130,16 @@ namespace KPSCOmrResult
             html.Append("<div class=\"table-responsive\"><table class=\"table table-bordered table-striped table-sm text-center result-details\">")
                 .Append("<thead><tr>");
 
-            for (int side = 0; side < 2; side++)
-                html.Append("<th>Question No</th><th>Cand Marked Answer</th><th>Key Answer</th><th>Cand Obtained Marks</th>");
+            for (int block = 0; block < blocks; block++)
+                html.Append("<th class=\"result-qno\">Question No</th><th>Cand Marked Answer</th><th>Key Answer</th><th>Cand Obtained Marks</th>");
 
             html.Append("</tr></thead><tbody>");
 
-            for (int i = 0; i < half; i++)
+            for (int i = 0; i < rowsPerBlock && i < answers.Length; i++)
             {
                 html.Append("<tr>");
-                AppendQuestion(html, i, answers, key);
-                AppendQuestion(html, i + half, answers, key);
+                for (int block = 0; block < blocks; block++)
+                    AppendQuestion(html, i + block * rowsPerBlock, answers, key);
                 html.Append("</tr>");
             }
 
@@ -184,7 +186,7 @@ namespace KPSCOmrResult
         {
             if (index >= answers.Length)
             {
-                html.Append("<td></td><td></td><td></td><td></td>");
+                html.Append("<td class=\"result-qno\"></td><td></td><td></td><td></td>");
                 return;
             }
 
@@ -193,7 +195,7 @@ namespace KPSCOmrResult
             string keyAnswer;
             bool hasKey = key.TryGetValue(questionNo, out keyAnswer);
 
-            html.Append("<td>").Append(questionNo).Append("</td>")
+            html.Append("<td class=\"result-qno\">").Append(questionNo).Append("</td>")
                 .Append("<td>").Append(Html(marked)).Append("</td>")
                 .Append("<td>").Append(hasKey ? Html(keyAnswer) : "-").Append("</td>")
                 .Append("<td>").Append(hasKey ? Html(OmrKey.Format(OmrKey.Marks(marked, keyAnswer))) : "").Append("</td>");
