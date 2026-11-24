@@ -29,12 +29,12 @@
     font-weight: 700;
     color: #626262;
     line-height: 1.55;
-    padding: 25px 25px 15px;
+    padding: 20px 25px 10px;
 }
 
 /* Login Body */
 .login-body {
-    padding: 20px 24px 10px;
+    padding: 20px 24px 20px;
 }
 
 /* Form Groups */
@@ -190,7 +190,7 @@
     }
 
     .login-body {
-        padding: 15px 20px 30px;
+        padding: 20px 20px 20px;
     }
 
     .login-panel .form-label {

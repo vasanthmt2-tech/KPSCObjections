@@ -131,7 +131,7 @@ namespace KPSCOmrResult
                 .Append("<thead><tr>");
 
             for (int block = 0; block < blocks; block++)
-                html.Append("<th class=\"result-qno\">Question No</th><th>Cand Marked Answer</th><th>Key Answer</th><th>Cand Obtained Marks</th>");
+                html.Append("<th class=\"result-qno\">Q.No</th><th>Your Answer</th><th>Key</th><th>Marks</th>");
 
             html.Append("</tr></thead><tbody>");
 
@@ -149,10 +149,10 @@ namespace KPSCOmrResult
             int leftBlank = Convert.ToInt32(r["LeftBlank"]);
 
             html.Append("<div class=\"table-responsive\"><table class=\"table table-bordered table-sm text-center\">")
-                .Append("<thead><tr><th>Tot Valid Questions</th><th>Tot Correct Answers</th><th>Tot Wrong Answers</th>")
-                .Append("<th>Tot Un-Attended Answers</th>")
-                .Append(leftBlank > 0 ? "<th>Tot Left Blank</th>" : "")
-                .Append("<th>Tot Marks Obtained</th></tr></thead><tbody><tr>")
+                .Append("<thead><tr><th>Questions</th><th>Correct</th><th>Wrong</th>")
+                .Append("<th>Not Attempted</th>")
+                .Append(leftBlank > 0 ? "<th>Left Blank</th>" : "")
+                .Append("<th>Total Marks</th></tr></thead><tbody><tr>")
                 .Append("<td>").Append(answers.Length).Append("</td>")
                 .Append("<td>").Append(Convert.ToInt32(r["Correct"])).Append("</td>")
                 .Append("<td>").Append(Convert.ToInt32(r["Incorrect"])).Append("</td>")
