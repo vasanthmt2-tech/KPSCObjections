@@ -1,6 +1,6 @@
 ﻿<%@ Page Title="Candidate Login - Marks Objection Portal" Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeBehind="Login.aspx.cs" Inherits="KPSCMarksObjection.Login" %>
 <asp:Content ID="Content1" ContentPlaceHolderID="MainContent" runat="server">
-     <link href="css/Login.css?v=2" rel="stylesheet" />
+     <link href="css/Login.css?v=6" rel="stylesheet" />
     <div class="login-page">
 
         <div class="login-panel">
