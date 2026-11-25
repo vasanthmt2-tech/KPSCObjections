@@ -232,12 +232,15 @@ namespace KPSCObjections
             bool firstOverCap;
             RequestThrottle.Allow(SmsHourBucket, "all", int.MaxValue, TimeSpan.FromHours(1), out firstOverCap);
 
-            if (!SendSMS(mobile, otp))
+            // The SMS is sent in the background, so the page answers as fast for a
+            // registered number as for any other (the gateway's delay would show
+            // which numbers exist). If the gateway fails, the OTP is cancelled and
+            // the failure logged; the candidate can use Resend OTP after a minute.
+            System.Web.Hosting.HostingEnvironment.QueueBackgroundWorkItem(cancel =>
             {
-                InvalidateOTP(regNo);
-                ShowError("Unable to send OTP. Please try again later.");
-                return;
-            }
+                if (!SendSMS(mobile, otp))
+                    InvalidateOTP(regNo);
+            });
 
             ShowSuccess(OtpRequestedMessage);
         }
