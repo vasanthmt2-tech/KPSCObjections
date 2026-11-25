@@ -1,0 +1,66 @@
+﻿
+.payment-response-page {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 65vh;
+    padding: 30px 15px;
+}
+
+.payment-response-panel {
+    width: 100%;
+    max-width: 550px;
+    background: #ffffff;
+    padding: 35px;
+    border-radius: 10px;
+    box-shadow: 0 3px 18px rgba(0, 0, 0, 0.10);
+    text-align: center;
+}
+
+.payment-response-icon {
+    font-size: 48px;
+    margin-bottom: 15px;
+}
+
+.payment-response-panel h2 {
+    color: #243b53;
+    font-size: 24px;
+    margin-bottom: 15px;
+}
+
+.response-message {
+    color: #52606d;
+    font-size: 15px;
+    line-height: 1.7;
+    margin-bottom: 25px;
+}
+
+.transaction-details {
+    background: #f4f6f9;
+    padding: 15px;
+    border-radius: 6px;
+    margin-bottom: 25px;
+    text-align: left;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+    font-size: 14px;
+    color: #334e68;
+}
+
+.btn-continue {
+    display: inline-block;
+    padding: 11px 28px;
+    background: #1769aa;
+    color: #ffffff !important;
+    text-decoration: none !important;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+    .btn-continue:hover {
+        background: #12558b;
+    }

@@ -1,0 +1,103 @@
+/* Home page (Default.aspx) and admin home (Admin/Default.aspx): one card per service. */
+
+.home-page {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 24px 0 8px;
+    font-family: Arial, Helvetica, sans-serif;
+    color: #222;
+}
+
+.home-title {
+    color: #172b46;
+    font-size: 22px;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 6px;
+}
+
+.home-intro {
+    text-align: center;
+    color: #52647b;
+    font-size: 14px;
+    margin: 0 auto 24px;
+    max-width: 720px;
+}
+
+.home-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 20px;
+}
+
+.home-card {
+    background: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+    padding: 22px 22px 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+    .home-card h3 {
+        font-size: 17px;
+        font-weight: bold;
+        color: #172b46;
+        margin: 10px 0 8px;
+    }
+
+    .home-card p {
+        font-size: 14px;
+        color: #52647b;
+        flex-grow: 1;
+    }
+
+    .home-card ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        flex-grow: 1;
+    }
+
+        .home-card ul li a {
+            display: block;
+            padding: 7px 0;
+            color: #1957bb;
+            font-size: 14px;
+            text-decoration: none;
+            border-bottom: 1px solid #eef1f5;
+        }
+
+            .home-card ul li a:hover,
+            .home-card ul li a:focus {
+                color: #10428f;
+                text-decoration: underline;
+            }
+
+.home-icon {
+    font-size: 30px;
+    color: #1957bb;
+}
+
+.home-button {
+    background: #1957bb;
+    border-color: #1957bb;
+    align-self: flex-start;
+}
+
+    .home-button:hover,
+    .home-button:focus {
+        background: #10428f;
+        border-color: #10428f;
+    }
+
+.home-admin {
+    text-align: center;
+    margin-top: 26px;
+    font-size: 13px;
+}
+
+    .home-admin a {
+        color: #52647b;
+    }

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copy to connectionStrings.config and fill in. The real file is not committed. -->
+<connectionStrings>
+  <add name="Objection_ConnectionString" connectionString="Data Source=SERVER;Database=KPSC_OBJECTIONS;User ID=APP_LOGIN;Password=CHANGE_ME;" providerName="System.Data.SqlClient" />
+</connectionStrings>

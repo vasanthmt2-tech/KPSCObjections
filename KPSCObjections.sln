@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KPSCMarksObjection", "KPSCM
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KPSCOmrResult", "KPSCOmrResult\KPSCOmrResult.csproj", "{05095EF4-82C1-4925-B159-F1B21CC6E24D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KPSCExamPortal", "KPSCExamPortal\KPSCExamPortal.csproj", "{087E7A0B-CDED-40C4-9645-ED0AB16F991C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{05095EF4-82C1-4925-B159-F1B21CC6E24D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{05095EF4-82C1-4925-B159-F1B21CC6E24D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{05095EF4-82C1-4925-B159-F1B21CC6E24D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{087E7A0B-CDED-40C4-9645-ED0AB16F991C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{087E7A0B-CDED-40C4-9645-ED0AB16F991C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{087E7A0B-CDED-40C4-9645-ED0AB16F991C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{087E7A0B-CDED-40C4-9645-ED0AB16F991C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

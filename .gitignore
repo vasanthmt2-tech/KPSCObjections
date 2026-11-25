@@ -24,11 +24,14 @@ KPSCMarksObjection/connectionStrings.config
 KPSCMarksObjection/appSettings.secrets.config
 KPSCOmrResult/connectionStrings.config
 KPSCOmrResult/appSettings.secrets.config
+KPSCExamPortal/connectionStrings.config
+KPSCExamPortal/appSettings.secrets.config
 
 # Uploaded data
 KPSCObjections/UploadedKeyAnswers/
 KPSCMarksObjection/UploadedKeyAnswers/
 KPSCOmrResult/UploadedKeyAnswers/
+KPSCExamPortal/UploadedKeyAnswers/
 
 # Temporary test files
 **/ZzTestFiles/
@@ -40,3 +43,4 @@ KPSCOmrResult/UploadedKeyAnswers/
 KPSCObjections/App_Data/logs/
 KPSCMarksObjection/App_Data/logs/
 KPSCOmrResult/App_Data/logs/
+KPSCExamPortal/App_Data/logs/

@@ -1,0 +1,159 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="Admin.master.cs" Inherits="KPSCExamPortal.AdminMaster" %>
+
+<!DOCTYPE html>
+
+<html lang="en">
+<head runat="server">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>KPSC Examination Portal</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <asp:ContentPlaceHolder ID="HeadContent" runat="server" />
+
+
+    <asp:PlaceHolder runat="server">
+        <%: Scripts.Render("~/bundles/modernizr") %>
+        <%-- Lets AutoPostBack controls work under the Content-Security-Policy (no unsafe-eval). --%>
+        <script src="<%: ResolveUrl("~/Scripts/postback-csp.js") %>"></script>
+        <%-- No right-click menu (except in text boxes). --%>
+        <script src="<%: ResolveUrl("~/Scripts/no-context-menu.js") %>"></script>
+        <%-- Form submissions are encrypted in the browser (Security/EncryptedForms.cs). --%>
+        <meta name="kpsc-enc-key" content="<%: KPSCExamPortal.Security.EncryptedForms.PublicKey %>" />
+        <script src="<%: ResolveUrl("~/Scripts/form-encrypt.js") %>?v=3"></script>
+    </asp:PlaceHolder>
+
+    <webopt:bundlereference runat="server" path="~/Content/css" />
+    <link href="~/favicon.ico" rel="shortcut icon" type="image/x-icon" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" integrity="sha384-XGjxtQfXaH2tnPFa9x+ruJTuLE3Aa6LhHSWRr1XeTyhezb4abCG4ccI5AkVDxqC+" crossorigin="anonymous" />
+    <link href="~/css/AdminSite.css" rel="stylesheet" />
+</head>
+<body>
+    <form runat="server">
+        <asp:ScriptManager runat="server">
+            <Scripts>
+                <%--To learn more about bundling scripts in ScriptManager see https://go.microsoft.com/fwlink/?LinkID=301884 --%>
+                <%--Framework Scripts--%>
+                <asp:ScriptReference Name="MsAjaxBundle" />
+                <asp:ScriptReference Name="WebForms.js" Assembly="System.Web" Path="~/Scripts/WebForms/WebForms.js" />
+                <asp:ScriptReference Name="WebUIValidation.js" Assembly="System.Web" Path="~/Scripts/WebForms/WebUIValidation.js" />
+                <asp:ScriptReference Name="MenuStandards.js" Assembly="System.Web" Path="~/Scripts/WebForms/MenuStandards.js" />
+                <asp:ScriptReference Name="GridView.js" Assembly="System.Web" Path="~/Scripts/WebForms/GridView.js" />
+                <asp:ScriptReference Name="DetailsView.js" Assembly="System.Web" Path="~/Scripts/WebForms/DetailsView.js" />
+                <asp:ScriptReference Name="TreeView.js" Assembly="System.Web" Path="~/Scripts/WebForms/TreeView.js" />
+                <asp:ScriptReference Name="WebParts.js" Assembly="System.Web" Path="~/Scripts/WebForms/WebParts.js" />
+                <asp:ScriptReference Name="Focus.js" Assembly="System.Web" Path="~/Scripts/WebForms/Focus.js" />
+                <asp:ScriptReference Name="WebFormsBundle" />
+                <%--Site Scripts--%>
+            </Scripts>
+        </asp:ScriptManager>
+
+        <div class="main-container">
+
+            <%-- Header --%>
+            <div class="portal-header">
+
+                <div class="emblem">
+                   <%-- <img src="~/Images/KPSC.png" alt="Emblem" style="width:75px;height:75px;object-fit:contain;" />
+                    <asp:Image ID="imgEmblem" runat="server"
+    ImageUrl="~/Images/KPSC.png"
+    AlternateText="KPSC Emblem"
+    Width="75px"
+    Height="75px" />--%>
+                     <img src="<%= ResolveUrl("~/Images/KPSC.jpeg") %>"
+         alt="KPSC Emblem"
+         style="width:75px;height:75px;object-fit:contain;" />
+                </div>
+
+                <div class="header-title">
+                    <h1>KARNATAKA PUBLIC SERVICE COMMISSION</h1>
+                    <p>
+                        Examination Portal
+                    </p>
+                </div>
+
+            </div>
+
+            <%-- Navigation - Visible only after Admin Login --%>
+<asp:Panel ID="pnlNavigation" runat="server" Visible="false">
+
+    <div class="navigation">
+
+        <div class="nav-links">
+
+            <a href="~/Admin/Default.aspx" runat="server" class="home-link" title="Home">&#8962;</a>
+            <a href="~/Admin/Objections/Dashboard.aspx" runat="server">DASHBOARD</a>
+            <a href="~/Admin/UploadCandidates.aspx" runat="server">UPLOAD CANDIDATES</a>
+            <a href="~/Admin/Objections/UploadKeyAnswer.aspx" runat="server">UPLOAD KEY ANSWERS</a>
+            <a href="~/Admin/Objections/AdminObjection.aspx" runat="server">OBJECTIONS</a>
+            <a href="~/Admin/Objections/CandidateObjections.aspx" runat="server">CANDIDATE OBJECTIONS</a>
+            <a href="~/Admin/Objections/ObjectionWindow.aspx" runat="server">OBJECTION WINDOW</a>
+            <a href="~/Admin/Marks/Dashboard.aspx" runat="server">MARKS DASHBOARD</a>
+            <a href="~/Admin/Marks/AdminObjection.aspx" runat="server">MARKS OBJECTIONS</a>
+            <a href="~/Admin/Marks/CandidateObjections.aspx" runat="server">CANDIDATE MARKS OBJECTIONS</a>
+            <a href="~/Admin/Results/UploadResults.aspx" runat="server">UPLOAD RESULTS</a>
+            <a href="~/Admin/Results/UploadKeyAnswer.aspx" runat="server">UPLOAD FINAL KEY</a>
+            <a href="~/Admin/AuditTrail.aspx" runat="server">AUDIT TRAIL</a>
+
+        </div>
+
+        <div class="candidate-info">
+
+            <div class="candidate-details">
+                <strong>
+                    <asp:Label ID="lblAdminName"
+                        runat="server"></asp:Label>
+                </strong>
+            </div>
+
+            <asp:Button ID="btnLogout"
+                runat="server"
+                Text="LOGOUT"
+                CssClass="logout-button"
+                OnClick="btnLogout_Click" />
+
+        </div>
+
+    </div>
+
+</asp:Panel>
+
+            <%-- Notice --%>
+            <%--<div class="notice-bar">
+
+                <div class="notice-label">
+                    &#128276;&nbsp; Notice
+                </div>
+
+                <div class="notice-content">
+                    Objection window:
+                    <strong>05 Nov 2026, 10:00 AM</strong>
+                    to
+                    <strong>12 Nov 2026, 05:00 PM</strong>
+                    · Fee ₹70 per question
+                </div>
+
+            </div>--%>
+
+            <%-- Individual page content --%>
+            <%--<div class="page-content">
+                <asp:ContentPlaceHolder ID="ContentPlaceHolder1"
+                    runat="server">
+                </asp:ContentPlaceHolder>
+            </div>--%>
+
+        </div>
+        <div class="container body-content">
+            <asp:ContentPlaceHolder ID="MainContent" runat="server">
+            </asp:ContentPlaceHolder>
+            <hr />
+            <footer>
+                
+            </footer>
+        </div>
+
+    </form>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous" ></script>
+</body>
+</html>
