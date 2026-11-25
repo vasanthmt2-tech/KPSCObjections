@@ -232,3 +232,15 @@ body {
 /* Admin menu: every page as its own item; the bar wraps onto a second line when needed */
 .navigation .nav-links { flex-wrap: wrap; }
 .navigation .nav-links a { padding: 12px 11px; }
+
+/* Menu buttons: a divider line on the right of each item */
+.navigation .nav-links a {
+    border-right: 1px solid rgba(255, 255, 255, 0.6);
+    padding: 12px 11px;
+}
+
+    .navigation .nav-links a:hover,
+    .navigation .nav-links a:focus,
+    .navigation .nav-links a.active {
+        background: #10428f;
+    }

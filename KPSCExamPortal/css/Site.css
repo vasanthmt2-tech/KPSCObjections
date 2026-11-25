@@ -228,3 +228,15 @@ body {
         padding: 12px;
     }
 }
+
+/* Menu buttons: a divider line on the right of each item */
+.navigation .nav-links a {
+    border-right: 1px solid rgba(255, 255, 255, 0.6);
+    padding: 15px 16px;
+}
+
+    .navigation .nav-links a:hover,
+    .navigation .nav-links a:focus,
+    .navigation .nav-links a.active {
+        background: #10428f;
+    }
