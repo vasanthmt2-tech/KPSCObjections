@@ -14,7 +14,7 @@ namespace KPSCMarksObjection.Security
     /// random token that is valid only in the session that showed it; the
     /// token maps to the document's paper and question on the server. Editing
     /// or guessing a token, or using one from another session, finds nothing.
-    /// ObjectionDocument.ashx additionally reads the registration number from
+    /// MarksDocument.ashx additionally reads the registration number from
     /// the session, so a token can never point at another candidate's file.
     /// </summary>
     public static class DocumentReferences
@@ -30,16 +30,9 @@ namespace KPSCMarksObjection.Security
             public int QuestionNo;
         }
 
-        /// <summary>The link URL for one of the signed-in candidate's documents.</summary>
-        public static string Url(HttpSessionState session, object paperCode, object questionNo)
-        {
-            return "~/ObjectionDocument.ashx?d=" + Token(session, Convert.ToString(paperCode), Convert.ToInt32(questionNo));
-        }
-
         /// <summary>
         /// Paper codes of marks objection documents carry this prefix in the
-        /// map, so their tokens never resolve in ObjectionDocument.ashx and
-        /// answer key objection tokens never resolve in MarksDocument.ashx.
+        /// map; MarksDocument.ashx resolves only tokens that have it.
         /// </summary>
         public const string MarksPrefix = "M:";
 

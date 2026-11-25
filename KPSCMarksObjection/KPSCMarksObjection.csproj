@@ -264,7 +264,6 @@
     <Content Include="Site.Master" />
     <Content Include="Error.aspx" />
     <Content Include="NotFound.aspx" />
-    <Content Include="ObjectionDocument.ashx" />
     <Content Include="MarksDocument.ashx" />
     <Content Include="AuditTrail.aspx" />
     <Content Include="CandidateObjections.aspx" />
@@ -335,9 +334,6 @@
     <Compile Include="ObjectionSession.cs" />
     <Compile Include="MarksDocument.ashx.cs">
       <DependentUpon>MarksDocument.ashx</DependentUpon>
-    </Compile>
-    <Compile Include="ObjectionDocument.ashx.cs">
-      <DependentUpon>ObjectionDocument.ashx</DependentUpon>
     </Compile>
     <Compile Include="Payments\ObjectionRules.cs" />
     <Compile Include="Payments\PdfHeaderStamper.cs" />
