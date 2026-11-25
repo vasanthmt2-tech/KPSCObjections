@@ -195,7 +195,11 @@ namespace KPSCMarksObjection
             if (seconds == null || seconds == DBNull.Value)
                 return 0;
 
-            return Math.Max(1, (int)Math.Ceiling(Convert.ToInt32(seconds) / 60.0));
+            // DATEDIFF counts second boundaries, so right after a lock it can give
+            // one second more than the lock: never show more than the lock itself.
+            int lockMinutes = RequestThrottle.Setting("CandidateLockoutMinutes", 30);
+
+            return Math.Max(1, Math.Min(lockMinutes, (int)Math.Ceiling(Convert.ToInt32(seconds) / 60.0)));
         }
 
         /// <summary>

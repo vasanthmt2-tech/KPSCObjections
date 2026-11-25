@@ -15,7 +15,7 @@ namespace KPSCObjections
 
             if (isLoggedIn)
             {
-                lblAdminName.Text = Convert.ToString(Session[AuthSession.AdminKey]);
+                lblAdminName.Text = HttpUtility.HtmlEncode(Convert.ToString(Session[AuthSession.AdminKey]));
             }
 
             // Admin pages enforce sign-in themselves by inheriting AdminPage.

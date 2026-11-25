@@ -1,6 +1,6 @@
 <%@ Page Title="Result - OMR Result Portal" Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeBehind="Result.aspx.cs" Inherits="KPSCOmrResult.Result" %>
 <asp:Content ID="Content1" ContentPlaceHolderID="MainContent" runat="server">
-    <link href="css/Result.css?v=5" rel="stylesheet" />
+    <link href="css/Result.css?v=6" rel="stylesheet" />
 
     <div class="result-page mt-3">
 
@@ -11,7 +11,7 @@
 
         <div class="card result-panel">
             <div class="card-header result-panel-header">
-                <h5><i class="bi bi-table"></i> Candidate Results</h5>
+                <h3><i class="bi bi-table"></i> Candidate Results</h3>
             </div>
             <div class="card-body">
                 <%-- The results table and one details popup per paper (Result.aspx.cs).

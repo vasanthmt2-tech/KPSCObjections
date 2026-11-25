@@ -19,10 +19,10 @@ namespace KPSCMarksObjection
             if (!IsPostBack)
             {
                 lblCandidateName.Text =
-                    Convert.ToString(Session["CandidateName"]);
+                    HttpUtility.HtmlEncode(Convert.ToString(Session["CandidateName"]));
 
                 lblRegisterNumber.Text =
-                    Convert.ToString(Session["RegNoDesc"]);
+                    HttpUtility.HtmlEncode(Convert.ToString(Session["RegNoDesc"]));
             }
         }
 

@@ -227,7 +227,6 @@
     <Content Include="css\Login.css" />
     <Content Include="css\Objection.css" />
     <Content Include="css\Site.css" />
-    <Content Include="css\UploadKeyAnswers.css" />
     <Content Include="Default.aspx" />
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
@@ -272,7 +271,6 @@
     <Content Include="Dashboard.aspx" />
     <Content Include="ObjectionWindow.aspx" />
     <Content Include="UploadCandidates.aspx" />
-    <Content Include="UploadKeyAnswer.aspx" />
     <Content Include="Web.config" />
     <Content Include="Bundle.config" />
   </ItemGroup>
@@ -406,21 +404,14 @@
     <Compile Include="UploadCandidates.aspx.designer.cs">
       <DependentUpon>UploadCandidates.aspx</DependentUpon>
     </Compile>
-    <Compile Include="UploadKeyAnswer.aspx.cs">
-      <DependentUpon>UploadKeyAnswer.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="UploadKeyAnswer.aspx.designer.cs">
-      <DependentUpon>UploadKeyAnswer.aspx</DependentUpon>
-    </Compile>
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
     <None Include="packages.config" />
     <None Include="connectionStrings.config.example" />
     <None Include="appSettings.secrets.config.example" />
-    <Content Include="connectionStrings.config" Condition="Exists('connectionStrings.config')" />
-    <Content Include="appSettings.secrets.config" Condition="Exists('appSettings.secrets.config')" />
+    <None Include="connectionStrings.config" Condition="Exists('connectionStrings.config')" />
+    <None Include="appSettings.secrets.config" Condition="Exists('appSettings.secrets.config')" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

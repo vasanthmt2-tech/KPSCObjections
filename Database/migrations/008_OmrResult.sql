@@ -55,10 +55,11 @@ GO
 
 -- An earlier draft of this script kept the 100 answers in one column. If that
 -- table is still there and empty, it is replaced by this layout.
+-- The emptiness check runs as dynamic SQL: SQL Server evaluates every part of
+-- an IF condition, so a direct SELECT fails on a database without the table.
 IF OBJECT_ID('dbo.OmrResult', 'U') IS NOT NULL
    AND COL_LENGTH('dbo.OmrResult', 'Answers') IS NOT NULL
-   AND NOT EXISTS (SELECT 1 FROM dbo.OmrResult)
-    DROP TABLE dbo.OmrResult;
+    EXEC('IF NOT EXISTS (SELECT 1 FROM dbo.OmrResult) DROP TABLE dbo.OmrResult;');
 GO
 
 IF OBJECT_ID('dbo.OmrResult', 'U') IS NULL

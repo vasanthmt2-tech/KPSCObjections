@@ -95,10 +95,6 @@
                 UPLOAD CANDIDATES
             </a>
 
-            <a href="~/UploadKeyAnswer.aspx" runat="server">
-                UPLOAD KEY ANSWERS
-            </a>
-
             <a href="~/AdminObjection.aspx" runat="server">
                 OBJECTIONS
             </a>

@@ -437,8 +437,8 @@
     <None Include="packages.config" />
     <None Include="connectionStrings.config.example" />
     <None Include="appSettings.secrets.config.example" />
-    <Content Include="connectionStrings.config" Condition="Exists('connectionStrings.config')" />
-    <Content Include="appSettings.secrets.config" Condition="Exists('appSettings.secrets.config')" />
+    <None Include="connectionStrings.config" Condition="Exists('connectionStrings.config')" />
+    <None Include="appSettings.secrets.config" Condition="Exists('appSettings.secrets.config')" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

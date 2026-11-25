@@ -91,16 +91,15 @@ namespace KPSCOmrResult
                 return;
 
             // dbo.OmrResult has no examination column: a registration number belongs
-            // to one examination. Results whose number is not in this examination's
-            // candidate list are counted as "not in candidate list".
+            // to one examination, so this examination's results are the rows of its
+            // candidates (uploads accept only those).
             gvSummary.DataSource = sh.ExecuteDataTable(
                 @"SELECT r.Paper AS PaperCode,
                          ISNULL(MAX(s.SubjectDescription), r.Paper) AS SubjectDesc,
-                         COUNT(*) AS Candidates,
-                         SUM(CASE WHEN c.RegNo IS NULL THEN 1 ELSE 0 END) AS NotRegistered
+                         COUNT(*) AS Candidates
                   FROM dbo.OmrResult r
+                  INNER JOIN dbo.MarksCandidate c ON c.RegNo = r.RegNo AND c.ExamCode = @ExamCode
                   LEFT JOIN dbo.Subject s ON s.ExamCode = @ExamCode AND s.PaperCode = r.Paper
-                  LEFT JOIN dbo.MarksCandidate c ON c.RegNo = r.RegNo AND c.ExamCode = @ExamCode
                   GROUP BY r.Paper
                   ORDER BY r.Paper",
                 new SqlParameter("@ExamCode", SqlDbType.VarChar, 5) { Value = examCode });
@@ -184,18 +183,14 @@ namespace KPSCOmrResult
 
             ShowMessage(counts.Rows.ToString("N0", CultureInfo.InvariantCulture) + " results saved: " +
                 counts.Added.ToString("N0", CultureInfo.InvariantCulture) + " new, " +
-                counts.Replaced.ToString("N0", CultureInfo.InvariantCulture) + " replaced." +
-                (counts.NotRegistered > 0
-                    ? " " + counts.NotRegistered.ToString("N0", CultureInfo.InvariantCulture) +
-                      " of them are not in the marks portal's candidate list for this examination; those candidates cannot log in until they are uploaded there."
-                    : ""), true);
+                counts.Replaced.ToString("N0", CultureInfo.InvariantCulture) + " replaced.", true);
 
             BindSummary();
         }
 
         private sealed class UploadCounts
         {
-            public int Rows, Added, Replaced, NotRegistered;
+            public int Rows, Added, Replaced;
         }
 
         /// <summary>
@@ -387,14 +382,49 @@ namespace KPSCOmrResult
                         if (batch.Rows.Count > 0)
                             BulkCopy(con, transaction, batch);
 
+                        // dbo.OmrResult has no examination column, so every row must
+                        // belong to this examination's candidate list: otherwise a
+                        // wrong file could replace another examination's results.
+                        List<string> unknown = new List<string>();
+                        int unknownCount = 0;
+
+                        using (SqlCommand check = new SqlCommand(
+                            @"SELECT u.RegNo, COUNT(*) OVER () AS Total
+                              FROM #OmrUpload u
+                              WHERE NOT EXISTS (SELECT 1 FROM dbo.MarksCandidate c
+                                                WHERE c.RegNo = u.RegNo AND c.ExamCode = @ExamCode)
+                              ORDER BY u.RegNo
+                              OFFSET 0 ROWS FETCH NEXT 10 ROWS ONLY;",
+                            con, transaction))
+                        {
+                            check.CommandTimeout = SqlTimeoutSeconds;
+                            check.Parameters.Add("@ExamCode", SqlDbType.VarChar, 5).Value = examCode;
+
+                            using (SqlDataReader dr = check.ExecuteReader())
+                            {
+                                while (dr.Read())
+                                {
+                                    unknown.Add(dr.GetString(0));
+                                    unknownCount = dr.GetInt32(1);
+                                }
+                            }
+                        }
+
+                        if (unknownCount > 0)
+                        {
+                            errors.Add(unknownCount.ToString("N0", CultureInfo.InvariantCulture) +
+                                " row(s) have a registration number that is not in this examination's candidate list " +
+                                "(upload the candidates in the marks portal first, or choose the right examination): " +
+                                string.Join(", ", unknown) + (unknownCount > unknown.Count ? ", ..." : "") + ".");
+                            RollBack(transaction);
+                            return counts;
+                        }
+
                         using (SqlCommand cmd = new SqlCommand(
                             @"SELECT
                                   (SELECT COUNT(*) FROM #OmrUpload u
                                    WHERE EXISTS (SELECT 1 FROM dbo.OmrResult r
-                                                 WHERE r.RegNo = u.RegNo AND r.Paper = u.Paper)),
-                                  (SELECT COUNT(*) FROM #OmrUpload u
-                                   WHERE NOT EXISTS (SELECT 1 FROM dbo.MarksCandidate c
-                                                     WHERE c.RegNo = u.RegNo AND c.ExamCode = @ExamCode));
+                                                 WHERE r.RegNo = u.RegNo AND r.Paper = u.Paper));
 
                               UPDATE r SET SNo = u.SNo, Version = u.Version, Barcode = u.Barcode, Dist = u.Dist, Centre = u.Centre, Q1 = u.Q1, Q2 = u.Q2, Q3 = u.Q3, Q4 = u.Q4, Q5 = u.Q5, Q6 = u.Q6, Q7 = u.Q7, Q8 = u.Q8, Q9 = u.Q9, Q10 = u.Q10, Q11 = u.Q11, Q12 = u.Q12, Q13 = u.Q13, Q14 = u.Q14, Q15 = u.Q15, Q16 = u.Q16, Q17 = u.Q17, Q18 = u.Q18, Q19 = u.Q19, Q20 = u.Q20, Q21 = u.Q21, Q22 = u.Q22, Q23 = u.Q23, Q24 = u.Q24, Q25 = u.Q25, Q26 = u.Q26, Q27 = u.Q27, Q28 = u.Q28, Q29 = u.Q29, Q30 = u.Q30, Q31 = u.Q31, Q32 = u.Q32, Q33 = u.Q33, Q34 = u.Q34, Q35 = u.Q35, Q36 = u.Q36, Q37 = u.Q37, Q38 = u.Q38, Q39 = u.Q39, Q40 = u.Q40, Q41 = u.Q41, Q42 = u.Q42, Q43 = u.Q43, Q44 = u.Q44, Q45 = u.Q45, Q46 = u.Q46, Q47 = u.Q47, Q48 = u.Q48, Q49 = u.Q49, Q50 = u.Q50, Q51 = u.Q51, Q52 = u.Q52, Q53 = u.Q53, Q54 = u.Q54, Q55 = u.Q55, Q56 = u.Q56, Q57 = u.Q57, Q58 = u.Q58, Q59 = u.Q59, Q60 = u.Q60, Q61 = u.Q61, Q62 = u.Q62, Q63 = u.Q63, Q64 = u.Q64, Q65 = u.Q65, Q66 = u.Q66, Q67 = u.Q67, Q68 = u.Q68, Q69 = u.Q69, Q70 = u.Q70, Q71 = u.Q71, Q72 = u.Q72, Q73 = u.Q73, Q74 = u.Q74, Q75 = u.Q75, Q76 = u.Q76, Q77 = u.Q77, Q78 = u.Q78, Q79 = u.Q79, Q80 = u.Q80, Q81 = u.Q81, Q82 = u.Q82, Q83 = u.Q83, Q84 = u.Q84, Q85 = u.Q85, Q86 = u.Q86, Q87 = u.Q87, Q88 = u.Q88, Q89 = u.Q89, Q90 = u.Q90, Q91 = u.Q91, Q92 = u.Q92, Q93 = u.Q93, Q94 = u.Q94, Q95 = u.Q95, Q96 = u.Q96, Q97 = u.Q97, Q98 = u.Q98, Q99 = u.Q99, Q100 = u.Q100, Correct = u.Correct, Incorrect = u.Incorrect, NA = u.NA, LeftBlank = u.LeftBlank, MarksObt = u.MarksObt, [Rank] = u.[Rank]
                               FROM dbo.OmrResult r
@@ -414,7 +444,6 @@ namespace KPSCOmrResult
                             {
                                 dr.Read();
                                 counts.Replaced = dr.GetInt32(0);
-                                counts.NotRegistered = dr.GetInt32(1);
                             }
                         }
 
@@ -468,9 +497,11 @@ namespace KPSCOmrResult
             {
                 string value = Number(at(7 + q));
 
-                if (value.Length > 5 || value.Contains("|"))
+                // Blank, one circle (1 to 5) or several circles as digits (e.g. 15, 1234).
+                if (value.Length > 0 && !MarkedAnswer.IsMatch(value))
                 {
-                    errors.Add(RowError(rowNumber, "Q" + (q + 1) + " has an unexpected value."));
+                    errors.Add(RowError(rowNumber, "Q" + (q + 1) + " must be blank or digits 1 to 5 (for example 3 or 15), not \"" +
+                        (value.Length > 10 ? value.Substring(0, 10) + "..." : value) + "\"."));
                     break;
                 }
 
@@ -622,12 +653,17 @@ namespace KPSCOmrResult
 
             try
             {
+                // Only this examination's candidates: dbo.OmrResult has no
+                // examination column, and other examinations use the same papers.
                 int deleted = sh.ExecuteNonQuery(
-                    "DELETE FROM dbo.OmrResult WHERE Paper = @PaperCode",
+                    @"DELETE r FROM dbo.OmrResult r
+                      INNER JOIN dbo.MarksCandidate c ON c.RegNo = r.RegNo AND c.ExamCode = @ExamCode
+                      WHERE r.Paper = @PaperCode",
+                    new SqlParameter("@ExamCode", SqlDbType.VarChar, 5) { Value = examCode },
                     new SqlParameter("@PaperCode", SqlDbType.VarChar, 2) { Value = paper });
 
                 AdminAudit.Record(Context, AdminAudit.DeleteResults, "Exam " + examCode + ", paper " + paper + ": " + deleted + " results deleted");
-                ShowMessage(deleted.ToString("N0", CultureInfo.InvariantCulture) + " results of paper " + paper + " deleted.", true);
+                ShowMessage(deleted.ToString("N0", CultureInfo.InvariantCulture) + " results of paper " + paper + " deleted for this examination.", true);
             }
             catch (Exception ex)
             {
@@ -678,6 +714,8 @@ namespace KPSCOmrResult
         }
 
         /// <summary>"260000005.0" or "4.0" as stored by Excel for whole numbers becomes "260000005" or "4".</summary>
+        private static readonly Regex MarkedAnswer = new Regex(@"^[1-5]{1,5}$");
+
         private static string Number(string value)
         {
             return WholeNumber.IsMatch(value) ? value.Split('.')[0] : value;

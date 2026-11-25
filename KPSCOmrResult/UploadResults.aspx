@@ -61,7 +61,6 @@
                     <asp:BoundField DataField="PaperCode" HeaderText="Paper" />
                     <asp:BoundField DataField="SubjectDesc" HeaderText="Subject" />
                     <asp:BoundField DataField="Candidates" HeaderText="Candidates" DataFormatString="{0:N0}" />
-                    <asp:BoundField DataField="NotRegistered" HeaderText="Not in candidate list" DataFormatString="{0:N0}" />
                     <asp:TemplateField HeaderText="">
                         <ItemTemplate>
                             <asp:LinkButton ID="lnkDelete" runat="server"
@@ -69,14 +68,14 @@
                                 CssClass="btn btn-outline-danger btn-sm"
                                 CommandName="DeletePaper"
                                 CommandArgument='<%# Eval("PaperCode") %>'
-                                OnClientClick="return confirm('Delete ALL uploaded results of this paper? Candidates will no longer see them.');" />
+                                OnClientClick="return confirm('Delete all uploaded results of this paper for the selected examination? Its candidates will no longer see them.');" />
                         </ItemTemplate>
                     </asp:TemplateField>
                 </Columns>
                 <HeaderStyle CssClass="table-dark" />
             </asp:GridView>
             </div>
-            <small class="text-muted">"Not in candidate list": result rows whose registration number is not among the marks portal's candidates for this examination. Those candidates cannot log in to see the result.</small>
+            <small class="text-muted">Counts and Delete cover only this examination's candidates (the marks portal's candidate list). An upload is refused if any row's registration number is not in that list.</small>
         </asp:Panel>
 
         <asp:Label ID="lblSelectExam" runat="server" CssClass="text-muted"
