@@ -5,13 +5,13 @@
     <script type="text/javascript">
         // Remarks counter for the remarks box in each paper card.
         function updateRemarksCount(txt) {
-            if (txt.value.length > 700) {
-                txt.value = txt.value.substring(0, 700);
+            if (txt.value.length > 2000) {
+                txt.value = txt.value.substring(0, 2000);
             }
 
             var counter = txt.parentNode.querySelector('.remarks-counter');
             if (counter) {
-                counter.innerText = txt.value.length + " / 700 characters";
+                counter.innerText = txt.value.length + " / 2000 characters";
             }
         }
 
@@ -94,9 +94,9 @@
                                                 Remarks <span class="required">*</span>
                                             </label>
                                             <asp:TextBox ID="txtRemarks" runat="server" CssClass="form-control remarks-box"
-                                                TextMode="MultiLine" MaxLength="700" Rows="4"
+                                                TextMode="MultiLine" MaxLength="2000" Rows="4"
                                                 oninput="updateRemarksCount(this)" />
-                                            <small class="text-muted remarks-counter">0 / 700 characters</small>
+                                            <small class="text-muted remarks-counter">0 / 2000 characters</small>
                                         </div>
                                     </div>
                                     <div class="col-md-5">

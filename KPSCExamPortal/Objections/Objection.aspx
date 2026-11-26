@@ -61,12 +61,12 @@
             }
             function updateRemarksCount(txt) {
 
-                if (txt.value.length > 700) {
-                    txt.value = txt.value.substring(0, 700);
+                if (txt.value.length > 2000) {
+                    txt.value = txt.value.substring(0, 2000);
                 }
 
                 document.getElementById("remarksCounter").innerText =
-                    txt.value.length + " / 700 characters";
+                    txt.value.length + " / 2000 characters";
             }
 
             document.addEventListener("DOMContentLoaded", function () {
@@ -147,11 +147,11 @@
                                 Remarks <span class="required">*</span>
                             </label>
 
-                            <asp:TextBox ID="txtRemarks" runat="server" CssClass="form-control" TextMode="MultiLine" MaxLength="700" Rows="5" oninput="updateRemarksCount(this)">
+                            <asp:TextBox ID="txtRemarks" runat="server" CssClass="form-control" TextMode="MultiLine" MaxLength="2000" Rows="5" oninput="updateRemarksCount(this)">
                             </asp:TextBox>
 
                             <small id="remarksCounter" class="text-muted">
-                                0 / 700 characters
+                                0 / 2000 characters
                             </small>
                         </div>
                     </div>

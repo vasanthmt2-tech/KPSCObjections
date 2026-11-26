@@ -28,7 +28,7 @@ namespace KPSCExamPortal.Objections
         private const string Select = "---SELECT---";
         // 1 MB as Windows shows it (1,024 KB), so a file listed as under 1 MB is accepted.
         private const int MaxPdfBytes = 1024 * 1024;
-        private const int MaxRemarks = 700;
+        private const int MaxRemarks = 2000;
         private const int MaxFileName = 50;
         private const string GraceAnswer = "5";
         private const string MultipleAnswersCategory = "2";
@@ -215,7 +215,7 @@ namespace KPSCExamPortal.Objections
 
             if (remarks.Length > MaxRemarks)
             {
-                Alert("Remarks cannot exceed 700 characters.");
+                Alert("Remarks cannot exceed " + MaxRemarks + " characters.");
                 return;
             }
 

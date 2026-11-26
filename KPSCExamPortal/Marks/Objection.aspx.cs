@@ -27,7 +27,7 @@ namespace KPSCExamPortal.Marks
     {
         // 1 MB as Windows shows it (1,024 KB), so a file listed as under 1 MB is accepted.
         private const int MaxPdfBytes = 1024 * 1024;
-        private const int MaxRemarks = 700;
+        private const int MaxRemarks = 2000;
         private const int MaxFileName = 50;
 
         private readonly SqlHelper sh = new SqlHelper();
@@ -152,7 +152,7 @@ namespace KPSCExamPortal.Marks
 
             if (remarks.Length > MaxRemarks)
             {
-                Alert("Remarks cannot exceed 700 characters.");
+                Alert("Remarks cannot exceed " + MaxRemarks + " characters.");
                 return;
             }
 
