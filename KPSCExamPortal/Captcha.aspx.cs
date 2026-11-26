@@ -165,10 +165,10 @@ namespace KPSCExamPortal
                 {
                     // Wide letters (W, M, H) can make the code wider than the image;
                     // shrink the font until all six characters fit.
-                    float size = 20;
+                    float size = 18;
                     Font font = new Font("Georgia", size, FontStyle.Bold);
 
-                    while (size > 12 && graphics.MeasureString(captchaText, font).Width > Width - 12)
+                    while (size > 10 && graphics.MeasureString(captchaText, font).Width > Width - 12)
                     {
                         font.Dispose();
                         size -= 1;

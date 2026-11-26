@@ -21,12 +21,11 @@ body {
 
 /* Header */
 .portal-header {
-    min-height: 120px;
     display: flex;
     justify-content: center;
     align-items: center;
     gap: 18px;
-    padding: 15px;
+    padding: 6px 15px;
     text-align: center;
     border-bottom: 2px solid #e6a23c;
 }
@@ -45,7 +44,7 @@ body {
 }
 
 .header-title h1 {
-    font-size: 32px;
+    font-size: 25px;
     margin: 0 0 5px;
     color: #172b46;
     font-weight: bold;
@@ -76,8 +75,8 @@ body {
         color: #fff;
         text-decoration: none;
         padding: 15px 16px;
-        font-size: 12px;
-        font-weight: bold;
+        font-size: 11px;
+        font-weight: normal;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -230,13 +229,15 @@ body {
 }
 
 /* Admin menu: every page as its own item; the bar wraps onto a second line when needed */
-.navigation .nav-links { flex-wrap: wrap; }
-.navigation .nav-links a { padding: 12px 11px; }
+.navigation .nav-links { flex-wrap: wrap; align-content: flex-start; }
 
-/* Menu buttons: a divider line on the right of each item */
+/* Menu buttons: a divider line on the right of each item.
+   A fixed line height keeps every row the same height; without it the
+   larger home icon made the first row taller than the second. */
 .navigation .nav-links a {
     border-right: 1px solid rgba(255, 255, 255, 0.6);
-    padding: 12px 11px;
+    padding: 8px 11px;
+    line-height: 18px;
 }
 
     .navigation .nav-links a:hover,

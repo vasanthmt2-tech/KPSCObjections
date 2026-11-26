@@ -32,7 +32,5 @@
             </div>
 
         </div>
-
-        <p class="home-admin"><a href="~/Admin/Login.aspx" runat="server">Admin login</a></p>
     </div>
 </asp:Content>

@@ -144,6 +144,13 @@
         background-color: #9d00a3;
         border-color: #9d00a3;
     }
+/* Space between the Get OTP and Resend OTP buttons */
+.otp-button-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
 /* OTP textbox and Get OTP button alignment */
 .otp-row {
     display: flex;

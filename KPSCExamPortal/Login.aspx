@@ -1,6 +1,6 @@
 ﻿<%@ Page Title="Candidate Login - KPSC Examination Portal" Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeBehind="Login.aspx.cs" Inherits="KPSCExamPortal.Login" %>
 <asp:Content ID="Content1" ContentPlaceHolderID="MainContent" runat="server">
-     <link href="<%: ResolveUrl("~/css/Login.css?v=8") %>" rel="stylesheet" />
+     <link href="<%: ResolveUrl("~/css/Login.css?v=9") %>" rel="stylesheet" />
     <div class="login-page">
 
         <div class="login-panel">
