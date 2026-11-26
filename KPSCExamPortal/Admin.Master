@@ -83,11 +83,11 @@
         <div class="nav-links">
 
             <a href="~/Admin/Default.aspx" runat="server" class="home-link" title="Home">&#8962;</a>
-            <a href="~/Admin/Objections/Dashboard.aspx" runat="server">DASHBOARD</a>
+            <a id="lnkKeyDashboard" href="~/Admin/Objections/Dashboard.aspx" runat="server">DASHBOARD</a>
             <a href="~/Admin/UploadCandidates.aspx" runat="server">UPLOAD CANDIDATES</a>
-            <a href="~/Admin/Objections/UploadKeyAnswer.aspx" runat="server">UPLOAD KEY ANSWERS</a>
-            <a href="~/Admin/Objections/AdminObjection.aspx" runat="server">OBJECTIONS</a>
-            <a href="~/Admin/Objections/CandidateObjections.aspx" runat="server">CANDIDATE OBJECTIONS</a>
+            <a id="lnkKeyUpload" href="~/Admin/Objections/UploadKeyAnswer.aspx" runat="server">UPLOAD KEY ANSWERS</a>
+            <a id="lnkKeyObjections" href="~/Admin/Objections/AdminObjection.aspx" runat="server">OBJECTIONS</a>
+            <a id="lnkKeyCandidates" href="~/Admin/Objections/CandidateObjections.aspx" runat="server">CANDIDATE OBJECTIONS</a>
             <a href="~/Admin/Objections/ObjectionWindow.aspx" runat="server">OBJECTION WINDOW</a>
             <a href="~/Admin/Marks/Dashboard.aspx" runat="server">MARKS DASHBOARD</a>
             <a href="~/Admin/Marks/AdminObjection.aspx" runat="server">MARKS OBJECTIONS</a>

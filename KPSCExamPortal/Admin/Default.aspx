@@ -12,11 +12,13 @@
                 <h3>Candidates and Window</h3>
                 <ul>
                     <li><a href="~/Admin/UploadCandidates.aspx" runat="server">Upload Candidates and Version Codes</a></li>
-                    <li><a href="~/Admin/Objections/ObjectionWindow.aspx" runat="server">Objection Window (key answers and marks)</a></li>
+                    <li><a href="~/Admin/Objections/ObjectionWindow.aspx" runat="server">Objection Windows (key answers and marks)</a></li>
                     <li><a href="~/Admin/AuditTrail.aspx" runat="server">Audit Trail</a></li>
                 </ul>
             </div>
 
+            <%-- Hidden while the answer key objection module is switched off (see PortalModules) --%>
+            <% if (KPSCExamPortal.PortalModules.KeyAnswerObjections) { %>
             <div class="home-card">
                 <i class="bi bi-ui-checks home-icon" aria-hidden="true"></i>
                 <h3>Answer Key Objections</h3>
@@ -27,6 +29,7 @@
                     <li><a href="~/Admin/Objections/CandidateObjections.aspx" runat="server">Candidate Objections</a></li>
                 </ul>
             </div>
+            <% } %>
 
             <div class="home-card">
                 <i class="bi bi-pencil-square home-icon" aria-hidden="true"></i>

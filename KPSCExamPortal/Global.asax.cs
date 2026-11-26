@@ -53,6 +53,9 @@ namespace KPSCExamPortal
             if (HttpsPolicy.OnBeginRequest(Context))
                 return;
 
+            // A switched-off module's pages answer 404 (see PortalModules).
+            PortalModules.RejectIfSwitchedOff(Context);
+
             // Form posts arrive encrypted; decrypt them before ASP.NET reads the
             // body, and refuse plain posts (except SBI ePay's callbacks).
             if (EncryptedForms.OnBeginRequest(Context))

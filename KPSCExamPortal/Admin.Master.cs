@@ -13,6 +13,10 @@ namespace KPSCExamPortal
 
             pnlNavigation.Visible = isLoggedIn;
 
+            // The answer key objection module can be switched off (see PortalModules).
+            lnkKeyDashboard.Visible = lnkKeyUpload.Visible = lnkKeyObjections.Visible =
+                lnkKeyCandidates.Visible = PortalModules.KeyAnswerObjections;
+
             if (isLoggedIn)
             {
                 lblAdminName.Text = HttpUtility.HtmlEncode(Convert.ToString(Session[AuthSession.AdminKey]));

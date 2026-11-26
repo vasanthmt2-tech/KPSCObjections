@@ -3,20 +3,25 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Globalization;
 using System.Web;
+using System.Web.UI.WebControls;
 using KPSCExamPortal.DLL;
+using KPSCExamPortal.Payments;
 using KPSCExamPortal.Security;
 
 namespace KPSCExamPortal.Admin.Objections
 {
     /// <summary>
-    /// Admin page to view and change the objection window of an examination
-    /// (dbo.Exam.ObjectionStart / ObjectionEnd). Candidates can add objections
-    /// and pay only while the window is open; the window is read from the
-    /// database on every request, so a change applies at once.
+    /// Admin page to view and change the two objection windows of an examination,
+    /// one card each:
+    ///   - answer key objections: dbo.Exam.ObjectionStart / ObjectionEnd;
+    ///   - marks objections:      dbo.Exam.MarksObjectionStart / MarksObjectionEnd.
+    /// Candidates can file only while the window of that kind is open; windows are
+    /// read from the database on every request, so a change applies at once.
     ///
-    /// Times are the database server's clock (as used by ObjectionRules).
-    /// A save only succeeds if nobody else changed the window since the page
-    /// was loaded, and every change is written to the application log.
+    /// Times are the database server's clock (as used by ObjectionRules). Each card
+    /// saves only its own window, and only if nobody else changed that window since
+    /// the page was loaded. Every change is recorded in the audit trail.
+    /// The answer key card is hidden while that module is switched off (PortalModules).
     /// </summary>
     public partial class EditObjectionWindow : AdminPage
     {
@@ -26,62 +31,103 @@ namespace KPSCExamPortal.Admin.Objections
 
         private readonly SqlHelper sh = new SqlHelper();
 
-        /// <summary>The window as loaded, to detect a change made meanwhile by someone else.</summary>
-        private DateTime? LoadedStart
+        /// <summary>The controls of one card.</summary>
+        private class WindowCard
         {
-            get { return ViewState["LoadedStart"] as DateTime?; }
-            set { ViewState["LoadedStart"] = value; }
+            public ObjectionKind Kind;
+            public string Name;
+            public TextBox StartDate, StartTime, EndDate, EndTime;
+            public Label Status, Current;
         }
 
-        private DateTime? LoadedEnd
+        private WindowCard Card(ObjectionKind kind)
         {
-            get { return ViewState["LoadedEnd"] as DateTime?; }
-            set { ViewState["LoadedEnd"] = value; }
+            return kind == ObjectionKind.Marks
+                ? new WindowCard
+                {
+                    Kind = kind, Name = "marks objection",
+                    StartDate = txtMarksStartDate, StartTime = txtMarksStartTime,
+                    EndDate = txtMarksEndDate, EndTime = txtMarksEndTime,
+                    Status = lblMarksStatus, Current = lblMarksCurrent
+                }
+                : new WindowCard
+                {
+                    Kind = kind, Name = "answer key objection",
+                    StartDate = txtKeyStartDate, StartTime = txtKeyStartTime,
+                    EndDate = txtKeyEndDate, EndTime = txtKeyEndTime,
+                    Status = lblKeyStatus, Current = lblKeyCurrent
+                };
+        }
+
+        /// <summary>A window as loaded, to detect a change made meanwhile by someone else.</summary>
+        private DateTime? Loaded(ObjectionKind kind, string part)
+        {
+            return ViewState["Loaded" + kind + part] as DateTime?;
+        }
+
+        private void SetLoaded(ObjectionKind kind, string part, DateTime? value)
+        {
+            ViewState["Loaded" + kind + part] = value;
         }
 
         protected void Page_Load(object sender, EventArgs e)
         {
+            pnlKey.Visible = KPSCExamPortal.PortalModules.KeyAnswerObjections;
+
             if (!IsPostBack)
             {
                 BindExams();
-                LoadWindow();
+                LoadWindows();
             }
         }
 
         protected void ddlExam_SelectedIndexChanged(object sender, EventArgs e)
         {
             ShowMessage("", true);
-            LoadWindow();
+            LoadWindows();
         }
 
         protected void btnCancel_Click(object sender, EventArgs e)
         {
             ShowMessage("", true);
-            LoadWindow();
+            LoadWindows();
         }
 
-        protected void btnSave_Click(object sender, EventArgs e)
+        protected void btnSaveKey_Click(object sender, EventArgs e)
+        {
+            // The card is hidden while the module is off; refuse a save posted anyway.
+            if (KPSCExamPortal.PortalModules.KeyAnswerObjections)
+                Save(Card(ObjectionKind.KeyAnswer));
+        }
+
+        protected void btnSaveMarks_Click(object sender, EventArgs e)
+        {
+            Save(Card(ObjectionKind.Marks));
+        }
+
+        private void Save(WindowCard card)
         {
             if (ddlExam.Items.Count == 0)
                 return;
 
+            string title = Capitalise(card.Name);
             DateTime start, end;
 
-            if (!TryReadDateTime(txtStartDate.Text, txtStartTime.Text, out start))
+            if (!TryReadDateTime(card.StartDate.Text, card.StartTime.Text, out start))
             {
-                ShowMessage("Please enter a valid start date and time.", false);
+                ShowMessage(title + " window: please enter a valid start date and time.", false);
                 return;
             }
 
-            if (!TryReadDateTime(txtEndDate.Text, txtEndTime.Text, out end))
+            if (!TryReadDateTime(card.EndDate.Text, card.EndTime.Text, out end))
             {
-                ShowMessage("Please enter a valid end date and time.", false);
+                ShowMessage(title + " window: please enter a valid end date and time.", false);
                 return;
             }
 
             if (end <= start)
             {
-                ShowMessage("The end must be after the start.", false);
+                ShowMessage(title + " window: the end must be after the start.", false);
                 return;
             }
 
@@ -89,34 +135,37 @@ namespace KPSCExamPortal.Admin.Objections
             end = end.AddSeconds(59);
 
             string examCode = ddlExam.SelectedValue;
+            DateTime? oldStart = Loaded(card.Kind, "Start"), oldEnd = Loaded(card.Kind, "End");
+
+            // Column names come from ObjectionRules only, never from input.
+            string startCol = ObjectionRules.StartColumn(card.Kind), endCol = ObjectionRules.EndColumn(card.Kind);
 
             int updated = sh.ExecuteNonQuery(
-                @"UPDATE dbo.Exam
-                  SET ObjectionStart = @Start, ObjectionEnd = @End
-                  WHERE ExamCode = @ExamCode
-                    AND ((ObjectionStart IS NULL AND @OldStart IS NULL) OR ObjectionStart = @OldStart)
-                    AND ((ObjectionEnd IS NULL AND @OldEnd IS NULL) OR ObjectionEnd = @OldEnd)",
+                "UPDATE dbo.Exam SET " + startCol + " = @Start, " + endCol + " = @End " +
+                "WHERE ExamCode = @ExamCode " +
+                "AND ((" + startCol + " IS NULL AND @OldStart IS NULL) OR " + startCol + " = @OldStart) " +
+                "AND ((" + endCol + " IS NULL AND @OldEnd IS NULL) OR " + endCol + " = @OldEnd)",
                 new SqlParameter("@Start", SqlDbType.DateTime2) { Value = start },
                 new SqlParameter("@End", SqlDbType.DateTime2) { Value = end },
                 new SqlParameter("@ExamCode", SqlDbType.VarChar, 5) { Value = examCode },
-                new SqlParameter("@OldStart", SqlDbType.DateTime2) { Value = (object)LoadedStart ?? DBNull.Value },
-                new SqlParameter("@OldEnd", SqlDbType.DateTime2) { Value = (object)LoadedEnd ?? DBNull.Value });
+                new SqlParameter("@OldStart", SqlDbType.DateTime2) { Value = (object)oldStart ?? DBNull.Value },
+                new SqlParameter("@OldEnd", SqlDbType.DateTime2) { Value = (object)oldEnd ?? DBNull.Value });
 
             if (updated == 0)
             {
-                LoadWindow();
-                ShowMessage("The objection window was changed by someone else meanwhile. " +
+                LoadWindows();
+                ShowMessage("The " + card.Name + " window was changed by someone else meanwhile. " +
                             "The current values are shown below; please check them and save again.", false);
                 return;
             }
 
             // Recorded in the audit trail (and the application log).
             AdminAudit.Record(Context, AdminAudit.ChangeObjectionWindow,
-                "Exam " + examCode + ": from " + Show(LoadedStart) + " - " + Show(LoadedEnd) +
-                " to " + Show(start) + " - " + Show(end));
+                "Exam " + examCode + " (" + (card.Kind == ObjectionKind.Marks ? "Marks" : "Answer key") + "): from " +
+                Show(oldStart) + " - " + Show(oldEnd) + " to " + Show(start) + " - " + Show(end));
 
-            LoadWindow();
-            ShowMessage("The objection window has been saved. Candidates see the change at once.", true);
+            LoadWindows();
+            ShowMessage("The " + card.Name + " window has been saved. Candidates see the change at once.", true);
         }
 
         private void BindExams()
@@ -131,7 +180,7 @@ namespace KPSCExamPortal.Admin.Objections
             ddlExam.DataValueField = "ExamCode";
             ddlExam.DataBind();
 
-            // Opened from the dashboard for a particular examination.
+            // Opened from a dashboard for a particular examination.
             string requested = Request.QueryString["exam"];
 
             if (!string.IsNullOrEmpty(requested) && ddlExam.Items.FindByValue(requested) != null)
@@ -141,13 +190,13 @@ namespace KPSCExamPortal.Admin.Objections
             lblNoExam.Visible = exams.Rows.Count == 0;
         }
 
-        private void LoadWindow()
+        private void LoadWindows()
         {
             if (ddlExam.Items.Count == 0)
                 return;
 
             DataTable dt = sh.ExecuteDataTable(
-                @"SELECT ObjectionStart, ObjectionEnd, IsActive, GETDATE() AS Now
+                @"SELECT ObjectionStart, ObjectionEnd, MarksObjectionStart, MarksObjectionEnd, IsActive, GETDATE() AS Now
                   FROM dbo.Exam WHERE ExamCode = @ExamCode",
                 new SqlParameter("@ExamCode", SqlDbType.VarChar, 5) { Value = ddlExam.SelectedValue });
 
@@ -155,18 +204,27 @@ namespace KPSCExamPortal.Admin.Objections
                 return;
 
             DataRow row = dt.Rows[0];
-            DateTime? start = row["ObjectionStart"] == DBNull.Value ? (DateTime?)null : Convert.ToDateTime(row["ObjectionStart"]);
-            DateTime? end = row["ObjectionEnd"] == DBNull.Value ? (DateTime?)null : Convert.ToDateTime(row["ObjectionEnd"]);
             DateTime now = Convert.ToDateTime(row["Now"]);
             bool active = Convert.ToString(row["IsActive"]).Trim() == "Y";
 
-            LoadedStart = start;
-            LoadedEnd = end;
+            lblNow.Text = HttpUtility.HtmlEncode(now.ToString(ShowFormat, CultureInfo.InvariantCulture));
 
-            txtStartDate.Text = start.HasValue ? start.Value.ToString(DateFormat, CultureInfo.InvariantCulture) : "";
-            txtStartTime.Text = start.HasValue ? start.Value.ToString(TimeFormat, CultureInfo.InvariantCulture) : "";
-            txtEndDate.Text = end.HasValue ? end.Value.ToString(DateFormat, CultureInfo.InvariantCulture) : "";
-            txtEndTime.Text = end.HasValue ? end.Value.ToString(TimeFormat, CultureInfo.InvariantCulture) : "";
+            foreach (ObjectionKind kind in new[] { ObjectionKind.KeyAnswer, ObjectionKind.Marks })
+                ShowWindow(Card(kind), row, now, active);
+        }
+
+        private void ShowWindow(WindowCard card, DataRow row, DateTime now, bool active)
+        {
+            DateTime? start = DateOrNull(row[ObjectionRules.StartColumn(card.Kind)]);
+            DateTime? end = DateOrNull(row[ObjectionRules.EndColumn(card.Kind)]);
+
+            SetLoaded(card.Kind, "Start", start);
+            SetLoaded(card.Kind, "End", end);
+
+            card.StartDate.Text = start.HasValue ? start.Value.ToString(DateFormat, CultureInfo.InvariantCulture) : "";
+            card.StartTime.Text = start.HasValue ? start.Value.ToString(TimeFormat, CultureInfo.InvariantCulture) : "";
+            card.EndDate.Text = end.HasValue ? end.Value.ToString(DateFormat, CultureInfo.InvariantCulture) : "";
+            card.EndTime.Text = end.HasValue ? end.Value.ToString(TimeFormat, CultureInfo.InvariantCulture) : "";
 
             string status, css;
 
@@ -191,10 +249,14 @@ namespace KPSCExamPortal.Admin.Objections
                 css = "badge text-bg-success";
             }
 
-            lblStatus.Text = HttpUtility.HtmlEncode(status);
-            lblStatus.CssClass = css;
-            lblCurrent.Text = HttpUtility.HtmlEncode(Show(start) + "  to  " + Show(end));
-            lblNow.Text = HttpUtility.HtmlEncode(now.ToString(ShowFormat, CultureInfo.InvariantCulture));
+            card.Status.Text = HttpUtility.HtmlEncode(status);
+            card.Status.CssClass = css;
+            card.Current.Text = HttpUtility.HtmlEncode(Show(start) + "  to  " + Show(end));
+        }
+
+        private static DateTime? DateOrNull(object value)
+        {
+            return value == DBNull.Value ? (DateTime?)null : Convert.ToDateTime(value);
         }
 
         private static bool TryReadDateTime(string date, string time, out DateTime value)
@@ -219,6 +281,11 @@ namespace KPSCExamPortal.Admin.Objections
         private static string Show(DateTime? value)
         {
             return value.HasValue ? value.Value.ToString(ShowFormat, CultureInfo.InvariantCulture) : "(not set)";
+        }
+
+        private static string Capitalise(string text)
+        {
+            return char.ToUpperInvariant(text[0]) + text.Substring(1);
         }
 
         private void ShowMessage(string message, bool ok)

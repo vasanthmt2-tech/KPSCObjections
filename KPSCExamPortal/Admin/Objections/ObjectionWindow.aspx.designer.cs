@@ -13,18 +13,114 @@ namespace KPSCExamPortal.Admin.Objections
 
     public partial class EditObjectionWindow
     {
+        /// <summary>
+        /// lblNoExam control.
+        /// </summary>
         protected global::System.Web.UI.WebControls.Label lblNoExam;
+
+        /// <summary>
+        /// lblMessage control.
+        /// </summary>
         protected global::System.Web.UI.WebControls.Label lblMessage;
+
+        /// <summary>
+        /// pnlForm control.
+        /// </summary>
         protected global::System.Web.UI.WebControls.Panel pnlForm;
+
+        /// <summary>
+        /// ddlExam control.
+        /// </summary>
         protected global::System.Web.UI.WebControls.DropDownList ddlExam;
-        protected global::System.Web.UI.WebControls.Label lblStatus;
-        protected global::System.Web.UI.WebControls.Label lblCurrent;
+
+        /// <summary>
+        /// lblNow control.
+        /// </summary>
         protected global::System.Web.UI.WebControls.Label lblNow;
-        protected global::System.Web.UI.WebControls.TextBox txtStartDate;
-        protected global::System.Web.UI.WebControls.TextBox txtStartTime;
-        protected global::System.Web.UI.WebControls.TextBox txtEndDate;
-        protected global::System.Web.UI.WebControls.TextBox txtEndTime;
-        protected global::System.Web.UI.WebControls.Button btnSave;
+
+        /// <summary>
+        /// pnlKey control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Panel pnlKey;
+
+        /// <summary>
+        /// lblKeyStatus control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Label lblKeyStatus;
+
+        /// <summary>
+        /// lblKeyCurrent control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Label lblKeyCurrent;
+
+        /// <summary>
+        /// txtKeyStartDate control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.TextBox txtKeyStartDate;
+
+        /// <summary>
+        /// txtKeyStartTime control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.TextBox txtKeyStartTime;
+
+        /// <summary>
+        /// txtKeyEndDate control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.TextBox txtKeyEndDate;
+
+        /// <summary>
+        /// txtKeyEndTime control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.TextBox txtKeyEndTime;
+
+        /// <summary>
+        /// btnSaveKey control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Button btnSaveKey;
+
+        /// <summary>
+        /// pnlMarks control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Panel pnlMarks;
+
+        /// <summary>
+        /// lblMarksStatus control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Label lblMarksStatus;
+
+        /// <summary>
+        /// lblMarksCurrent control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Label lblMarksCurrent;
+
+        /// <summary>
+        /// txtMarksStartDate control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.TextBox txtMarksStartDate;
+
+        /// <summary>
+        /// txtMarksStartTime control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.TextBox txtMarksStartTime;
+
+        /// <summary>
+        /// txtMarksEndDate control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.TextBox txtMarksEndDate;
+
+        /// <summary>
+        /// txtMarksEndTime control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.TextBox txtMarksEndTime;
+
+        /// <summary>
+        /// btnSaveMarks control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Button btnSaveMarks;
+
+        /// <summary>
+        /// btnCancel control.
+        /// </summary>
         protected global::System.Web.UI.WebControls.Button btnCancel;
     }
 }

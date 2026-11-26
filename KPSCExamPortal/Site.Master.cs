@@ -16,6 +16,9 @@ namespace KPSCExamPortal
             // so Logout still works for a signed-in candidate.
             pnlNavigation.Visible = KPSCExamPortal.Security.AuthSession.IsCandidate(Context);
 
+            // The answer key objection module can be switched off (see PortalModules).
+            lnkFileObjection.Visible = lnkMyObjections.Visible = PortalModules.KeyAnswerObjections;
+
             // The section's name under the heading.
             string path = Request.AppRelativeCurrentExecutionFilePath ?? "";
             litPortal.Text = path.StartsWith("~/Objections/", StringComparison.OrdinalIgnoreCase) ? "Answer Key Objection Portal"

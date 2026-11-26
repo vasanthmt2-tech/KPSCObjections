@@ -70,7 +70,7 @@
                 </div>
                 <div class="col-12 col-sm-6 col-xl-3">
                     <div class="dash-card dash-muted">
-                        <div class="dash-label">Objection window</div>
+                        <div class="dash-label">Marks objection window</div>
                         <asp:Panel ID="pnlWindowValue" runat="server" CssClass="dash-value">
                             <asp:Literal ID="litWindow" runat="server" />
                         </asp:Panel>

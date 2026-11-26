@@ -82,8 +82,8 @@
                 <div class="nav-links">
 
                     <a href="~/Default.aspx" runat="server" class="home-link" title="Home">&#8962;</a>
-                    <a href="~/Objections/Objection.aspx" runat="server">FILE OBJECTION</a>
-                    <a href="~/Objections/MyObjections.aspx" runat="server">MY OBJECTIONS</a>
+                    <a id="lnkFileObjection" href="~/Objections/Objection.aspx" runat="server">FILE OBJECTION</a>
+                    <a id="lnkMyObjections" href="~/Objections/MyObjections.aspx" runat="server">MY OBJECTIONS</a>
                     <a href="~/Marks/Objection.aspx" runat="server">MARKS OBJECTION</a>
                     <a href="~/Results/Result.aspx" runat="server">MY RESULT</a>
 

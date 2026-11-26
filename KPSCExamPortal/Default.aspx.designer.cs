@@ -16,5 +16,10 @@ namespace KPSCExamPortal
 
         /// <summary>lnkResult control.</summary>
         protected global::System.Web.UI.HtmlControls.HtmlAnchor lnkResult;
+
+        /// <summary>
+        /// cardKey control.
+        /// </summary>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl cardKey;
     }
 }

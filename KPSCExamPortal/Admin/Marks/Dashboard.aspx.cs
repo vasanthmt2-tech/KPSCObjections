@@ -64,8 +64,8 @@ namespace KPSCExamPortal.Admin.Marks
             DataTable exams = sh.ExecuteDataTable(
                 @"SELECT ExamCode, ISNULL(ExamDescription, ExamCode) AS ExamDescription
                   FROM dbo.Exam
-                  ORDER BY CASE WHEN (ObjectionStart IS NULL OR ObjectionStart <= GETDATE())
-                                 AND (ObjectionEnd IS NULL OR ObjectionEnd >= GETDATE()) THEN 0 ELSE 1 END,
+                  ORDER BY CASE WHEN (MarksObjectionStart IS NULL OR MarksObjectionStart <= GETDATE())
+                                 AND (MarksObjectionEnd IS NULL OR MarksObjectionEnd >= GETDATE()) THEN 0 ELSE 1 END,
                            CASE WHEN IsActive = 'Y' THEN 0 ELSE 1 END,
                            ExamCode");
 
@@ -136,7 +136,7 @@ namespace KPSCExamPortal.Admin.Marks
         private void BindWindow()
         {
             DataTable dt = sh.ExecuteDataTable(
-                "SELECT ObjectionStart, ObjectionEnd, IsActive FROM dbo.Exam WHERE ExamCode = @ExamCode", ExamParam());
+                "SELECT MarksObjectionStart AS ObjectionStart, MarksObjectionEnd AS ObjectionEnd, IsActive FROM dbo.Exam WHERE ExamCode = @ExamCode", ExamParam());
 
             object start = dt.Rows.Count > 0 ? dt.Rows[0]["ObjectionStart"] : DBNull.Value;
             object end = dt.Rows.Count > 0 ? dt.Rows[0]["ObjectionEnd"] : DBNull.Value;
@@ -175,7 +175,7 @@ namespace KPSCExamPortal.Admin.Marks
             litWindow.Text = Html(status);
             litWindowSub.Text = Html(detail);
             pnlWindowValue.CssClass = "dash-value " + css;
-            lnkEditWindow.NavigateUrl = "~/Admin/Objections/ObjectionWindow.aspx?exam=" + HttpUtility.UrlEncode(ExamCode);
+            lnkEditWindow.NavigateUrl = "~/Admin/Objections/ObjectionWindow.aspx?exam=" + HttpUtility.UrlEncode(ExamCode) + "#marks-window";
         }
 
         // ---------------------------------------------------------------

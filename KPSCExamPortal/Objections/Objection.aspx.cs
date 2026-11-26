@@ -68,7 +68,7 @@ namespace KPSCExamPortal.Objections
         /// </summary>
         private void RefreshState()
         {
-            ObjectionWindow window = ObjectionRules.GetWindow(ssen.ExamCode);
+            ObjectionWindow window = ObjectionRules.GetWindow(ssen.ExamCode, ObjectionKind.KeyAnswer);
             List<PaymentInfo> pending = PaymentService.FindAllPending(ssen.RegNo);
             DataTable rows = LoadDrafts();
 
@@ -147,7 +147,7 @@ namespace KPSCExamPortal.Objections
         /// </summary>
         private bool CanEdit()
         {
-            if (!ObjectionRules.GetWindow(ssen.ExamCode).IsOpen)
+            if (!ObjectionRules.GetWindow(ssen.ExamCode, ObjectionKind.KeyAnswer).IsOpen)
             {
                 Alert("The objection window is not open.");
                 RefreshState();

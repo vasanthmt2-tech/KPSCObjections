@@ -7,6 +7,16 @@ using KPSCExamPortal.DLL;
 
 namespace KPSCExamPortal.Payments
 {
+    /// <summary>Which objection window: each examination has one for each kind.</summary>
+    public enum ObjectionKind
+    {
+        /// <summary>Answer key objections: dbo.Exam.ObjectionStart / ObjectionEnd.</summary>
+        KeyAnswer,
+
+        /// <summary>Marks objections: dbo.Exam.MarksObjectionStart / MarksObjectionEnd.</summary>
+        Marks
+    }
+
     /// <summary>The period during which objections may be filed for an examination.</summary>
     public class ObjectionWindow
     {
@@ -59,16 +69,31 @@ namespace KPSCExamPortal.Payments
             }
         }
 
-        /// <summary>
-        /// Window dates live in dbo.Exam (ObjectionStart, ObjectionEnd). The
-        /// database clock decides whether it is open.
-        /// </summary>
-        public static ObjectionWindow GetWindow(string examCode)
+        /// <summary>The dbo.Exam columns holding the start and end of a kind's window.</summary>
+        public static string StartColumn(ObjectionKind kind)
         {
+            return kind == ObjectionKind.Marks ? "MarksObjectionStart" : "ObjectionStart";
+        }
+
+        public static string EndColumn(ObjectionKind kind)
+        {
+            return kind == ObjectionKind.Marks ? "MarksObjectionEnd" : "ObjectionEnd";
+        }
+
+        /// <summary>
+        /// Window dates live in dbo.Exam: ObjectionStart / ObjectionEnd for answer
+        /// key objections, MarksObjectionStart / MarksObjectionEnd for marks
+        /// objections. The database clock decides whether it is open.
+        /// </summary>
+        public static ObjectionWindow GetWindow(string examCode, ObjectionKind kind)
+        {
+            // Column names come from StartColumn / EndColumn only, never from input.
+            string start = StartColumn(kind), end = EndColumn(kind);
+
             DataTable dt = new SqlHelper().ExecuteDataTable(
-                "SELECT ObjectionStart, ObjectionEnd, " +
-                "CASE WHEN (ObjectionStart IS NULL OR ObjectionStart <= GETDATE()) " +
-                "AND (ObjectionEnd IS NULL OR ObjectionEnd >= GETDATE()) THEN 1 ELSE 0 END AS IsOpen " +
+                "SELECT " + start + " AS ObjectionStart, " + end + " AS ObjectionEnd, " +
+                "CASE WHEN (" + start + " IS NULL OR " + start + " <= GETDATE()) " +
+                "AND (" + end + " IS NULL OR " + end + " >= GETDATE()) THEN 1 ELSE 0 END AS IsOpen " +
                 "FROM dbo.Exam WHERE ExamCode = @ExamCode AND IsActive = 'Y'",
                 new SqlParameter("@ExamCode", SqlDbType.VarChar, 5) { Value = examCode ?? "" });
 

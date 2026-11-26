@@ -13,6 +13,9 @@ namespace KPSCExamPortal
         {
             bool signedIn = AuthSession.IsCandidate(Context);
 
+            // The answer key objection module can be switched off (see PortalModules).
+            cardKey.Visible = PortalModules.KeyAnswerObjections;
+
             lnkKey.HRef = signedIn ? "~/Objections/Objection.aspx" : "~/Login.aspx";
             lnkKey.InnerText = signedIn ? "File objections" : "Sign in with OTP";
 

@@ -234,7 +234,7 @@ namespace KPSCExamPortal.Admin.Objections
             litWindow.Text = Html(status);
             litWindowSub.Text = Html(detail);
             pnlWindowValue.CssClass = "dash-value " + css;
-            lnkEditWindow.NavigateUrl = "~/Admin/Objections/ObjectionWindow.aspx?exam=" + HttpUtility.UrlEncode(ExamCode);
+            lnkEditWindow.NavigateUrl = "~/Admin/Objections/ObjectionWindow.aspx?exam=" + HttpUtility.UrlEncode(ExamCode) + "#key-window";
         }
 
         // ---------------------------------------------------------------

@@ -54,7 +54,7 @@ namespace KPSCExamPortal.Marks
         /// <summary>Shows one card per paper: the objection filed, or the form while the window is open.</summary>
         private void RefreshState()
         {
-            ObjectionWindow window = ObjectionRules.GetWindow(ssen.ExamCode);
+            ObjectionWindow window = ObjectionRules.GetWindow(ssen.ExamCode, ObjectionKind.Marks);
 
             WindowOpen = window.IsOpen;
 
@@ -124,7 +124,7 @@ namespace KPSCExamPortal.Marks
                 return;
 
             // Re-checked here because the page may have been open for a while.
-            if (!ObjectionRules.GetWindow(ssen.ExamCode).IsOpen)
+            if (!ObjectionRules.GetWindow(ssen.ExamCode, ObjectionKind.Marks).IsOpen)
             {
                 Alert("The objection window is not open.");
                 RefreshState();

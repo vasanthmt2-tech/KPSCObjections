@@ -146,6 +146,8 @@ CREATE TABLE [dbo].[Exam](
 	[IsActive] [char](1) NULL,
 	[ObjectionStart] [datetime2](0) NULL,
 	[ObjectionEnd] [datetime2](0) NULL,
+	[MarksObjectionStart] [datetime2](0) NULL,
+	[MarksObjectionEnd] [datetime2](0) NULL,
  CONSTRAINT [PK_Exam] PRIMARY KEY CLUSTERED 
 (
 	[ExamCode] ASC

@@ -71,6 +71,16 @@ namespace KPSCExamPortal
         /// <summary>litPortal control.</summary>
         protected global::System.Web.UI.WebControls.Literal litPortal;
 
+        /// <summary>
+        /// lnkFileObjection control.
+        /// </summary>
+        protected global::System.Web.UI.HtmlControls.HtmlAnchor lnkFileObjection;
+
+        /// <summary>
+        /// lnkMyObjections control.
+        /// </summary>
+        protected global::System.Web.UI.HtmlControls.HtmlAnchor lnkMyObjections;
+
 
     }
 }

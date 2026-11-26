@@ -482,6 +482,7 @@
       <DependentUpon>Result.aspx</DependentUpon>
     </Compile>
     <Compile Include="Results\XlsxRowReader.cs" />
+    <Compile Include="PortalModules.cs" />
     <Compile Include="Security\AdminAudit.cs" />
     <Compile Include="Security\AdminAuth.cs" />
     <Compile Include="Security\AppLog.cs" />
@@ -493,8 +494,12 @@
     <Compile Include="Security\PasswordHasher.cs" />
     <Compile Include="Security\PdfSanitizer.cs" />
     <Compile Include="Security\RequestThrottle.cs" />
-    <Compile Include="Security\SecureMasterPage.cs" />
-    <Compile Include="Security\SecurePages.cs" />
+    <Compile Include="Security\SecureMasterPage.cs">
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Security\SecurePages.cs">
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
     <Compile Include="Security\SecurityHeaders.cs" />
     <Compile Include="Security\TestMode.cs" />
     <Compile Include="Security\UserFacingException.cs" />
