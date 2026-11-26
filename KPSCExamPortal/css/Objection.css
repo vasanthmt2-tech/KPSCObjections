@@ -138,6 +138,125 @@
             cursor: not-allowed;
             opacity: 0.5;
         }
+/* Marks objection: one card per paper */
+.paper-intro {
+    margin: 4px 0 12px;
+    color: #52647b;
+}
+
+.paper-card {
+    border: 1px solid #d5dbe5;
+    border-left: 4px solid #9530a5;
+    border-radius: 4px;
+    margin-bottom: 14px;
+    background: #fff;
+}
+
+    .paper-card.is-filed {
+        border-left-color: #1b7f3b;
+    }
+
+.paper-card-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding: 8px 12px;
+    background: #f6f7fb;
+    border-bottom: 1px solid #e3e7ef;
+}
+
+.paper-title {
+    font-size: 14px;
+    font-weight: bold;
+    color: #1b2a49;
+    margin-right: 8px;
+}
+
+.paper-meta {
+    color: #52647b;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+.status-filed {
+    background: #e3f4e8;
+    color: #1b7f3b;
+}
+
+.status-open {
+    background: #fff3d6;
+    color: #8a5a00;
+}
+
+.status-closed {
+    background: #eceff3;
+    color: #52647b;
+}
+
+.paper-card-body {
+    padding: 12px 12px 0;
+}
+
+    /* Content/Site.css caps textareas at 280px; the remarks box fills its column. */
+    .paper-card-body .remarks-box {
+        width: 100%;
+        max-width: none;
+        height: auto;
+    }
+
+.paper-submit {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 14px;
+}
+
+.filed-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 12px 20px;
+    padding-bottom: 12px;
+}
+
+.filed-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    color: #6b7a90;
+    margin-bottom: 3px;
+}
+
+.filed-value {
+    color: #1b2a49;
+    word-break: break-word;
+}
+
+    .filed-remarks .filed-value {
+        white-space: pre-wrap;
+    }
+
+.paper-none {
+    color: #52647b;
+    margin: 0 0 12px;
+}
+
+@media (max-width: 767.98px) {
+    .filed-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .paper-submit {
+        justify-content: center;
+    }
+}
+
 @media (max-width: 767.98px) {
     .candidate-panel {
         margin: 8px 0;

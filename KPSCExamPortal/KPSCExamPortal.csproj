@@ -255,7 +255,6 @@
     <Content Include="Images\KPSC.jpeg" />
     <Content Include="Login.aspx" />
     <Content Include="Marks\MarksDocument.ashx" />
-    <Content Include="Marks\MyObjections.aspx" />
     <Content Include="Marks\Objection.aspx" />
     <Content Include="NotFound.aspx" />
     <Content Include="Objections\MyObjections.aspx" />
@@ -427,13 +426,6 @@
     </Compile>
     <Compile Include="Marks\MarksDocument.ashx.cs">
       <DependentUpon>MarksDocument.ashx</DependentUpon>
-    </Compile>
-    <Compile Include="Marks\MyObjections.aspx.cs">
-      <DependentUpon>MyObjections.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="Marks\MyObjections.aspx.designer.cs">
-      <DependentUpon>MyObjections.aspx</DependentUpon>
     </Compile>
     <Compile Include="Marks\Objection.aspx.cs">
       <DependentUpon>Objection.aspx</DependentUpon>

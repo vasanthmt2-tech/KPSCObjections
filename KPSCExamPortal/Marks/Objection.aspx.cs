@@ -14,16 +14,17 @@ using System.Web.UI.WebControls;
 namespace KPSCExamPortal.Marks
 {
     /// <summary>
-    /// Filing marks objections.
+    /// Marks objections: filing them and seeing the ones filed, on one page.
     ///
-    /// The candidate picks a subject, writes remarks and may attach a PDF.
-    /// There is no fee: Submit saves the objection to dbo.MarksObjection
+    /// The page shows one card per paper of the examination. A paper with an
+    /// objection shows what was filed; a paper without one shows a form
+    /// (remarks and an optional PDF) while the window is open. There is no
+    /// fee: Submit saves the objection to dbo.MarksObjection
     /// (Database\migrations\006_MarksObjection.sql) and it is final. One
-    /// objection per subject.
+    /// objection per paper.
     /// </summary>
     public partial class Objection : KPSCExamPortal.Security.CandidatePage
     {
-        private const string Select = "---SELECT---";
         // 1 MB as Windows shows it (1,024 KB), so a file listed as under 1 MB is accepted.
         private const int MaxPdfBytes = 1024 * 1024;
         private const int MaxRemarks = 700;
@@ -39,7 +40,6 @@ namespace KPSCExamPortal.Marks
 
             if (!IsPostBack)
             {
-                BindSubject();
                 RefreshState();
             }
         }
@@ -48,40 +48,81 @@ namespace KPSCExamPortal.Marks
         // Page state
         // ---------------------------------------------------------------
 
-        /// <summary>Shows the submitted objections; the form only while the window is open.</summary>
+        /// <summary>Whether the objection window is open; the cards show a form only then.</summary>
+        protected bool WindowOpen { get; private set; }
+
+        /// <summary>Shows one card per paper: the objection filed, or the form while the window is open.</summary>
         private void RefreshState()
         {
             ObjectionWindow window = ObjectionRules.GetWindow(ssen.ExamCode);
 
-            pnlEntry.Visible = window.IsOpen;
+            WindowOpen = window.IsOpen;
 
             lblNotice.Visible = !window.IsOpen;
             lblNotice.Text = window.IsOpen ? "" : HttpUtility.HtmlEncode(window.ClosedMessage);
 
-            gvObjections.DataSource = LoadSubmitted();
-            gvObjections.DataBind();
+            DataTable papers = LoadPapers();
+
+            lblNoPapers.Visible = papers.Rows.Count == 0;
+
+            rptPapers.DataSource = papers;
+            rptPapers.DataBind();
         }
 
-        private DataTable LoadSubmitted()
+        /// <summary>
+        /// Every paper of the examination with the candidate's objection for it,
+        /// if any. VersionCode is the one saved with the objection, or else the
+        /// candidate's own version for that paper.
+        /// </summary>
+        private DataTable LoadPapers()
         {
             return sh.ExecuteDataTable(
-                @"SELECT m.PaperCode AS SubjectCode, s.SubjectDescription AS SubjectDesc, m.VersionCode,
+                @"SELECT s.PaperCode, s.SubjectDescription,
+                         CASE WHEN m.PaperCode IS NOT NULL THEN m.VersionCode
+                              WHEN s.PaperCode = 'P1' THEN NULLIF(LTRIM(RTRIM(c.P1VersionCode)), '')
+                              ELSE NULLIF(LTRIM(RTRIM(c.P2VersionCode)), '') END AS VersionCode,
+                         CAST(CASE WHEN m.PaperCode IS NULL THEN 0 ELSE 1 END AS bit) AS Filed,
                          m.Remarks, m.FileName, m.SubmittedDate
-                  FROM dbo.MarksObjection m
-                  LEFT JOIN dbo.Subject s
-                         ON s.PaperCode = m.PaperCode AND s.ExamCode = m.ExamCode
-                  WHERE m.Regno = @RegNo AND m.ExamCode = @ExamCode
-                  ORDER BY m.PaperCode",
+                  FROM dbo.Subject s
+                  LEFT JOIN dbo.MarksObjection m
+                         ON m.PaperCode = s.PaperCode AND m.ExamCode = s.ExamCode AND m.Regno = @RegNo
+                  LEFT JOIN dbo.MarksCandidate c
+                         ON c.RegNo = @RegNo
+                  WHERE s.ExamCode = @ExamCode
+                  ORDER BY s.SubjectCode",
                 RegNoParam(),
                 ExamParam());
+        }
+
+        // Card helpers used by the markup.
+
+        protected bool IsFiled(object dataItem)
+        {
+            return Convert.ToBoolean(((DataRowView)dataItem)["Filed"]);
+        }
+
+        protected string StatusText(object dataItem)
+        {
+            return IsFiled(dataItem) ? "&#10004; Submitted" : "Not filed";
+        }
+
+        protected string StatusCss(object dataItem)
+        {
+            if (IsFiled(dataItem))
+                return "status-filed";
+
+            return WindowOpen ? "status-open" : "status-closed";
         }
 
         // ---------------------------------------------------------------
         // Submit
         // ---------------------------------------------------------------
 
-        protected void btnAdd_Click(object sender, EventArgs e)
+        protected void rptPapers_ItemCommand(object source, RepeaterCommandEventArgs e)
         {
+            if (e.CommandName != "Submit")
+                return;
+
             // Re-checked here because the page may have been open for a while.
             if (!ObjectionRules.GetWindow(ssen.ExamCode).IsOpen)
             {
@@ -90,13 +131,16 @@ namespace KPSCExamPortal.Marks
                 return;
             }
 
-            // --- What the candidate entered ---
+            TextBox txtRemarks = (TextBox)e.Item.FindControl("txtRemarks");
+            FileUpload fileDocs = (FileUpload)e.Item.FindControl("fileDocs");
 
-            if (ddlSubjectCode.SelectedIndex <= 0)
+            if (txtRemarks == null || fileDocs == null)
             {
-                Alert("Please select Subject.");
+                RefreshState();
                 return;
             }
+
+            // --- What the candidate entered ---
 
             string remarks = txtRemarks.Text.Trim();
 
@@ -134,17 +178,19 @@ namespace KPSCExamPortal.Marks
 
             // --- What the server knows; nothing below trusts the form ---
 
-            string paperCode = ddlSubjectCode.SelectedValue;
+            string paperCode = Convert.ToString(e.CommandArgument);
 
             if (!PaperBelongsToExam(paperCode))
             {
-                Alert("Please select Subject.");
+                Alert("This paper is not part of your examination.");
+                RefreshState();
                 return;
             }
 
             if (AlreadySubmitted(paperCode))
             {
-                Alert("An objection for this subject has already been submitted.");
+                Alert("An objection for this paper has already been submitted.");
+                RefreshState();
                 return;
             }
 
@@ -203,21 +249,13 @@ namespace KPSCExamPortal.Marks
             catch (SqlException ex) when (ex.Number == 2627 || ex.Number == 2601)
             {
                 // Submitted twice at the same moment (double click, two tabs).
-                Alert("An objection for this subject has already been submitted.");
+                Alert("An objection for this paper has already been submitted.");
                 RefreshState();
                 return;
             }
 
-            ClearEntryFields();
             RefreshState();
             Alert("Objection submitted successfully.");
-        }
-
-        private void ClearEntryFields()
-        {
-            ddlSubjectCode.SelectedIndex = 0;
-            ddlVersionCode.Items.Clear();
-            txtRemarks.Text = "";
         }
 
         /// <summary>The line printed at the top of every page of a supporting document.</summary>
@@ -257,38 +295,6 @@ namespace KPSCExamPortal.Marks
                 name = name.Substring(0, MaxFileName - extension.Length);
 
             return name + extension;
-        }
-
-        // ---------------------------------------------------------------
-        // Dropdowns
-        // ---------------------------------------------------------------
-
-        private void BindSubject()
-        {
-            DataTable dt = sh.ExecuteDataTable(
-                "SELECT PaperCode, SubjectDescription FROM dbo.Subject WHERE ExamCode = @ExamCode ORDER BY SubjectCode",
-                ExamParam());
-
-            ddlSubjectCode.Items.Clear();
-            ddlSubjectCode.DataSource = dt;
-            ddlSubjectCode.DataValueField = "PaperCode";
-            ddlSubjectCode.DataTextField = "SubjectDescription";
-            ddlSubjectCode.DataBind();
-            ddlSubjectCode.Items.Insert(0, Select);
-        }
-
-        protected void ddlSubjectCode_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            ddlVersionCode.Items.Clear();
-
-            if (ddlSubjectCode.SelectedIndex <= 0)
-                return;
-
-            // Shown for information; the saved value is looked up again on Submit.
-            string version = GetCandidateVersion(ddlSubjectCode.SelectedValue);
-
-            if (!string.IsNullOrEmpty(version))
-                ddlVersionCode.Items.Add(new ListItem(version, version));
         }
 
         // ---------------------------------------------------------------

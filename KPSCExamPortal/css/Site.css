@@ -228,10 +228,29 @@ body {
     }
 }
 
-/* Menu buttons: a divider line on the right of each item */
+/* Menu bar the same height as an admin menu row (34px) */
+.navigation {
+    min-height: 0;
+}
+
+.candidate-info {
+    padding: 0 15px;
+}
+
+.candidate-details {
+    line-height: 14px;
+}
+
+.logout-button {
+    padding: 6px 14px;
+}
+
+/* Menu buttons: a divider line on the right of each item.
+   A fixed line height stops the larger home icon making the bar taller. */
 .navigation .nav-links a {
     border-right: 1px solid rgba(255, 255, 255, 0.6);
-    padding: 15px 16px;
+    padding: 8px 16px;
+    line-height: 18px;
 }
 
     .navigation .nav-links a:hover,
