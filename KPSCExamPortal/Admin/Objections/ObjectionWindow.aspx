@@ -1,7 +1,24 @@
 <%@ Page Title="Objection Windows - KPSC Examination Portal" Language="C#" MasterPageFile="~/Admin.Master" AutoEventWireup="true" CodeBehind="ObjectionWindow.aspx.cs" Inherits="KPSCExamPortal.Admin.Objections.EditObjectionWindow" %>
 <asp:Content ID="Content1" ContentPlaceHolderID="MainContent" runat="server">
 
-    <div class="container mt-4 mb-5" style="max-width: 1100px;">
+    <%-- Text on this page is 2pt smaller than the admin default --%>
+    <style>
+        .window-page { font-size: calc(1rem - 2pt); }
+        .window-page .form-control,
+        .window-page .form-select,
+        .window-page .btn { font-size: inherit; }
+        .window-page .h3 { font-size: 16pt; }
+
+        /* Compact window cards: less padding, smaller fields and buttons */
+        .window-page .card-header { padding: .4rem .75rem; }
+        .window-page .card-body { padding: .6rem .75rem; }
+        .window-page .card-body .form-control { padding: .2rem .45rem; }
+        .window-page .card-body .btn { padding: .25rem .75rem; }
+        .window-page .card-body .mb-3 { margin-bottom: .6rem !important; }
+        .window-page .card-body .mb-2 { margin-bottom: .35rem !important; }
+    </style>
+
+    <div class="container window-page mt-4 mb-5" style="max-width: 880px;">
 
         <h2 class="h3">Objection Windows</h2>
         <p class="text-muted">
@@ -28,7 +45,7 @@
                 </div>
             </div>
 
-            <div class="row g-4">
+            <div class="row g-3">
 
                 <%-- Answer key objection window: dbo.Exam.ObjectionStart / ObjectionEnd --%>
                 <asp:Panel ID="pnlKey" runat="server" CssClass="col-12 col-lg-6" DefaultButton="btnSaveKey">
